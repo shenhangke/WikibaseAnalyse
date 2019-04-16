@@ -1,0 +1,43 @@
+stages:
+  - build-maven
+  - run
+  - clean
+
+
+build-maven:
+  stage: build-maven
+  tags:
+    - S4-B
+  before_script:
+    - yum -y install docker   
+    - systemctl enable docker  
+    - systemctl start docker
+  script:
+    - name="shenhangke"
+    - mkdir -p ${SHARED_DIR}/Builds/${name}
+    - docker run -i --rm -v "$PWD/maven":/usr/src/mymaven -v "$HOME/.m2":/root/.m2 -w /usr/src/mymaven maven mvn clean package
+    - cp -r maven/target/* ${SHARED_DIR}/Builds/${name}
+  when: always
+
+run_project:
+  stage: run
+  tags: 
+    - S4-B
+  script:
+    - name="shenhangke"
+    - ${SPARK_DIR}/bin/spark-submit ${SHARED_DIR}/Builds/${name}/DataAny-0.0.1-SNAPSHOT.jar
+  when: always
+
+clean_project:
+  stage: clean
+  tags:
+    - S4-B
+  script: 
+    - name="shenhangke"
+    - ls ${SHARED_DIR}/Builds
+    - rm -rf ${SHARED_DIR}/Builds/${name}
+    - ls ${SHARED_DIR}/Builds
+    - echo "Builds cleaned!"
+  when: always
+
+
