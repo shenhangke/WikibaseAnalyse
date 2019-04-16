@@ -24,7 +24,7 @@ run_project:
     - S4-B
   script:
     - name="shenhangke"
-    - ${SPARK_DIR}/bin/spark-submit --class org.shk.DataAny.App.class ${SHARED_DIR}/Builds/${name}/DataAny-0.0.1-SNAPSHOT.jar
+    - ${SPARK_DIR}/bin/spark-submit --class org.shk.DataAny.App ${SHARED_DIR}/Builds/${name}/DataAny-0.0.1-SNAPSHOT.jar
   when: always
 
 clean_project:
