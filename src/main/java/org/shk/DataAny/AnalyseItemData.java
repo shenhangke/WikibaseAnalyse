@@ -30,6 +30,7 @@ import org.apache.spark.storage.StorageLevel;
 import org.shk.DataAny.AnalysePropertyData.DataType;
 import org.shk.JsonParse.Item;
 import org.shk.JsonParse.Item.Property.PropertyInfo;
+import org.shk.constValue.FileConstValue;
 
 import DatabaseUtil.JDBCUtil;
 import DatabaseUtil.PropertyDatabaseUtil;
@@ -107,8 +108,11 @@ public class AnalyseItemData implements Serializable{
 		StructField[] fieldList={pIDField,pNameField,pDescriptionField};
 		StructType schema=DataTypes.createStructType(fieldList);
 		Dataset<Row> infoData = this.session.createDataFrame(itemInfoRdd, schema);
-		infoData.show();
-		infoData.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
+		if(this.isWriteToFile(tableName)){
+			infoData.javaRDD().saveAsTextFile(this.getStoreFilePath(tableName));
+		}else{
+			infoData.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
+		}
 		return infoData;
 	}
 	
@@ -173,6 +177,18 @@ public class AnalyseItemData implements Serializable{
 		}
 	}
 	
+	private boolean isWriteToFile(String url){
+		return url.contains(FileConstValue.PrefixSaveToFile);
+	}
+	
+	private String getStoreFilePath(String url){
+		String[] aStrList=url.split(":");
+		if(aStrList.length==2){
+			return aStrList[1];
+		}else{
+			return null;
+		}
+	}
 	
 	public Dataset<Row> itemContainerAnalyse(Dataset<Item> originData,String tableName){
 		JavaRDD<Row> containRDD = originData.map(new MapFunction<Item,Row>() {
