@@ -134,7 +134,7 @@ public class AnalyseItemData implements Serializable{
 				}
 				
 			},Encoders.bean(Row.class)).javaRDD();
-			this.session.createDataFrame(witeToFileRdd, this.getSparkWriteToFileSchema()).write().mode(SaveMode.Append).text(this.getStoreFilePath(tableName));
+			this.session.createDataFrame(witeToFileRdd, this.getSparkWriteToFileSchema()).write().mode(SaveMode.Overwrite).text(this.getStoreFilePath(tableName));
 		}else{
 			infoData.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
 		}

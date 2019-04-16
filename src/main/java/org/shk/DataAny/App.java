@@ -86,7 +86,7 @@ public class App
     	SparkSession session=SparkSession.builder().appName("shk_WikiAnalyse").getOrCreate();
     	AnalyseItemData itemDataAnalysor=new AnalyseItemData(session);
     	DataAnalyse dataPreHandler=new DataAnalyse(session);
-    	Dataset<Item> originData=itemDataAnalysor.filterItemLine(dataPreHandler.PreHandleData(FileConstValue.ServerTestFileName));
+    	Dataset<Item> originData=itemDataAnalysor.filterItemLine(dataPreHandler.PreHandleData(FileConstValue.ServerFileName));
     	itemDataAnalysor.itemInfoAnalyse(originData, FileConstValue.PrefixSaveToFile+FileConstValue.ServerInfoFile);
     	/*AnalyseItemData itemDataAnalysor=new AnalyseItemData(session);
     	DataAnalyse dataPreHandler=new DataAnalyse(session);
