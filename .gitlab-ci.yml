@@ -13,7 +13,7 @@ build-maven:
     - systemctl enable docker  
     - systemctl start docker
   script:
-    - cp -r maven/target/* ${SHARED_DIR}/Builds/${name}
+    - cp -r ./target/* ${SHARED_DIR}/Builds/${name}
   when: always
 
 run_project:
