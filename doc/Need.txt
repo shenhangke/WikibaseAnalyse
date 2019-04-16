@@ -1,0 +1,6 @@
+查询需求：
+	1.给定一个名字，返回所有与这个名字匹配的实例
+	2.给定一个实例（ID），返回所有所述的分类（ID->PID(subclass,instance of)->mainsnak）
+	3.给定一个实例，返回所有在一条称述中提到的所有实例(ID->PID->Mainsnak(where dataType==entity_item))
+	4.给定一个实例，返回所有其所属的属性称述（ID->PID->MainSnak）
+	5.QA system

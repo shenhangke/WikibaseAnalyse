@@ -1,0 +1,6 @@
+Create table PropertyInfo(PIndex SMALLINT AUTO_INCREMENT,PID varchar(6) not null primary key,PName varchar(100),PDescription text,
+UNIQUE PIndexIndex (PIndex));
+Create table PropertyAlias(PID varchar(6),PAlias varchar(100),index AliasIDINdex (PID));
+Create table PMainSnak(ID varchar(45) not null,OriginPID varchar(6),PointPID varchar(6),SnakType TINYINT,
+DataType TINYINT,ValueType TINYINT,Value_para1 text,Value_para2 text);
+alter table PMainSnak add index Origin_POint_index (OriginPID,PointPID);
