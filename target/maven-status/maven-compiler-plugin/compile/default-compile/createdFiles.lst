@@ -46,6 +46,7 @@ org\shk\JsonParse\Item$Property$PropertyInfo$ReferenceInfo.class
 org\shk\JsonParse\Item$PropertyType.class
 org\shk\DataAny\AnalyseItemData$3.class
 org\shk\DataAny\AnalysePropertyData$2.class
+org\shk\DataAny\AnalyseItemData$12.class
 org\shk\DataAny\DataAnalyse$1.class
 org\shk\JsonParse\Item$EntityType.class
 org\shk\DataAny\AnalysePropertyData$10.class

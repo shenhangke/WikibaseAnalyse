@@ -18,6 +18,7 @@ public class FileConstValue {
 	public static String ServerFileName="";
 	public static String ServerTestFileName="";
 	public static String ServerInfoFile="";
+	public static String ServerFileUrlSourceDir="";
 	
 	
 	static{
@@ -28,9 +29,9 @@ public class FileConstValue {
 			System.out.println("the ServerSourceDir is null");
 			throw new NullPointerException("ServerSourceDir is null");
 		}else{
-			ServerSourceDir="file://"+ServerSourceDir;
-			ServerFileName=ServerSourceDir+"/Datasets/wikidata/wikidata-20181203-all/wikidata-20181203-all.json";
-			ServerTestFileName=ServerSourceDir+"/Datasets/wikidata/wikidata-20181203-all/head_10.txt";
+			ServerFileUrlSourceDir="file://"+ServerSourceDir;
+			ServerFileName=ServerFileUrlSourceDir+"/Datasets/wikidata/wikidata-20181203-all/wikidata-20181203-all.json";
+			ServerTestFileName=ServerFileUrlSourceDir+"/Datasets/wikidata/wikidata-20181203-all/head_10.txt";
 			ServerInfoFile=ServerSourceDir+"/shenhangke/info.txt";
 		}
 		
