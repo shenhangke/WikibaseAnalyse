@@ -23,10 +23,12 @@ public class FileConstValue {
 	static{
 		Map<String,String> env=System.getenv();
 		ServerSourceDir=env.get("SHARED_DIR");
+		System.out.println("the shared_dir is: "+ServerSourceDir);
 		if(ServerSourceDir==null){
 			System.out.println("the ServerSourceDir is null");
 			throw new NullPointerException("ServerSourceDir is null");
 		}else{
+			ServerSourceDir="file://"+ServerSourceDir;
 			ServerFileName=ServerSourceDir+"/Datasets/wikidata/wikidata-20181203-all/wikidata-20181203-all.json";
 			ServerTestFileName=ServerSourceDir+"/Datasets/wikidata/wikidata-20181203-all/head_10.txt";
 			ServerInfoFile=ServerSourceDir+"/shenhangke/info.txt";
