@@ -8,6 +8,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TimeZone;
 
 import org.apache.hadoop.mapred.FileSplit;
@@ -76,70 +78,12 @@ public class App
 {
     public static void main( String[] args ) throws Exception
     {
-    	/*  	
-        SparkSession session=SparkSession.builder().master("local").appName("Test").getOrCreate();
-        StructField aTempField=new StructField("name",DataTypes.StringType,true,Metadata.empty());
-        StructField aTempField_1=new StructField("id",DataTypes.IntegerType,true,Metadata.empty());
-        StructField[] fieldArr={aTempField,aTempField_1};
-        JavaRDD<String> aRdd=session.read().textFile("D:\\MyEclpse WorkSpace\\DataAny\\Test.txt").javaRDD();
-        StructType schema=DataTypes.createStructType(fieldArr);
-        JavaRDD<Row> aRddRow=aRdd.map(new Function<String, Row>() {
-
-			public Row call(String v1) throws Exception {
-				// TODO Auto-generated method stub
-				String[] aStrArr=v1.split(" ");
-				return org.apache.spark.sql.RowFactory.create(aStrArr[0],aStrArr[1]);
-			}
-		});
-        
-        Dataset<Row> aOriginDataset=session.createDataFrame(aRddRow, schema);
-        
-        ArrayList<Row> aRowList=new ArrayList<Row>();
-        Row a_1=org.apache.spark.sql.RowFactory.create("shenhangke",2);
-        Row a_2=RowFactory.create("qyw",3);
-        aRowList.add(a_1);
-        aRowList.add(a_2);
-        
-        Dataset<Row> aOriginDataset_byRow=session.createDataFrame(aRowList, schema);
-        aOriginDataset_byRow.show();
-        aOriginDataset_byRow.printSchema();
-        
-        StructField aTempField_2=new StructField("test", DataTypes.IntegerType, true, Metadata.empty());
-        StructField[] fieldArr_1={aTempField,aTempField_1,aTempField_2};
-        StructType schema_1=DataTypes.createStructType(fieldArr_1);
-        int[] intArr={1,2};
-        Object[] aObjArr={"shenhhh",new Integer(1),new Integer(1)};
-        
-        //===============================================================//
-        Object[] valueNamesCol={"shenhangketest"};
-		Object[] valuesCol={1,2};
-		int namesCount=valueNamesCol.length;
-		int valuesCount=valuesCol.length;
-		//the capacity need to add
-		Object[] aLine=Arrays.copyOf(valueNamesCol, namesCount+valuesCount);
-		System.arraycopy(valuesCol, 0, aLine, namesCount, valuesCount);
-        //===============================================================//
-        
-        Row b_1=RowFactory.create(aLine);
-        ArrayList<Row> aRowList_1=new ArrayList<Row>();
-        aRowList_1.add(b_1);
-        Dataset<Row> aOri=session.createDataFrame(aRowList_1, schema_1);
-        aOri.show();
-        aOri.printSchema();
-        
-        java.util.List<Row> collectAsList = aOri.collectAsList();
-        String aFirst=collectAsList.get(0).getString(0);
-        System.out.println(aFirst);
-        aOri.createOrReplaceTempView("test");
-        Dataset<Row> aquery=session.sql("select name from test");
-        aquery.show();
-        aquery.printSchema(); 
-        */
-    	//FileSplitUtil.writeFileFormTail(FileConstValue.SourceFilePath, FileConstValue.tailFileTest, 10000);
-    	//System.out.println(PropertyDatabaseUtil.MaxLengthOfItemName());
-    	//PropertyDatabaseUtil.StoreDataValueType(FileConstValue.SourceFileDir+"monolingualtext.json");
-    	//System.out.println(PropertyDatabaseUtil.MaxMainSnakIdLenth());
-    	SparkSession session=SparkSession.builder().
+    	Map<String,String> env=System.getenv();
+    	for(Entry<String,String> entry:env.entrySet()){
+    		System.out.println("env key: "+entry.getKey());
+    		System.out.println("env value: "+entry.getValue());
+    	}
+    	/*SparkSession session=SparkSession.builder().
 				appName("WikiAnalyse").master("local[3]").config("spark.driver.memory","8g").
 				config("spark.driver.cores",3).config("spark.executor.memory","2g").getOrCreate();
     	JavaSparkContext javaContent=new JavaSparkContext(session.sparkContext());
@@ -162,6 +106,7 @@ public class App
     	StructField[] typeList={type};
     	StructType schema=DataTypes.createStructType(typeList);
     	session.createDataFrame(testResultRdd, schema).show();
+    	System.out.println();*/
     	/*AnalyseItemData itemDataAnalysor=new AnalyseItemData(session);
     	DataAnalyse dataPreHandler=new DataAnalyse(session);
     	Dataset<Item> originData=itemDataAnalysor.filterItemLine(dataPreHandler.PreHandleData(FileConstValue.DivideFilePath));*/
@@ -199,52 +144,6 @@ public class App
     		}
     	};
     	handleItemTypeAnaThread.start();*/
-    	/*JavaSparkContext javaContext=new JavaSparkContext(session.sparkContext());
-    	ArrayList<String> aStringList=new ArrayList<String>();
-    	aStringList.add("qu");
-    	aStringList.add("er");
-    	aStringList.add("qu");
-    	aStringList.add("er");
-    	aStringList.add("qu");
-    	JavaRDD<String> listRdd = javaContext.parallelize(aStringList);
-    	JavaRDD<Row> listRow = listRdd.map(new Function<String, Row>() {
-
-			public Row call(String v1) throws Exception {
-				return RowFactory.create(v1,1);
-			}
-    		
-    	});
-    	StructField field_1=new StructField("type", DataTypes.StringType, true, Metadata.empty());
-    	StructField field_2=new StructField("num", DataTypes.IntegerType, true, Metadata.empty());
-    	StructField[] fieldList={field_1};
-    	StructType schema=DataTypes.createStructType(fieldList);
-    	JavaPairRDD<String, Integer> pair = listRow.mapToPair(new PairFunction<Row, String, Integer>() {
-
-			public Tuple2<String, Integer> call(Row t) throws Exception {
-				// TODO Auto-generated method stub
-				return new Tuple2<String,Integer>(t.getString(0),t.getInt(1));
-			}
-		});
-    	JavaPairRDD<String, Iterable<Integer>> group=pair.groupByKey();
-    	JavaRDD<Row> testGroup = group.map(new Function<Tuple2<String,Iterable<Integer>>, Row>() {
-
-			public Row call(Tuple2<String, Iterable<Integer>> v1) throws Exception {
-				// TODO Auto-generated method stub
-				return RowFactory.create(v1._1);
-			}
-		});
-    	Dataset<Row> result=session.createDataFrame(testGroup, schema);
-    	result.show();
-    	Iterator<StructField> iterator = result.schema().toIterator();
-    	if(iterator.hasNext()){
-    		System.out.println(iterator.next().name());
-    	}*/
-    	//PropertyDatabaseUtil.CreateContainPropertyTable();
-    	//System.out.println(Long.SIZE);
-    	//PropertyDatabaseUtil.TestOverflow();
-    	//PropertyDatabaseUtil.StoreDataValueType(FileConstValue.SourceFileDir+"TEstDT.txt");
-    	//AnalyseItemData.createItemContainerTable(JDBCUtil.ItemContainer);
-    	
     }
     
     public static void aTest(String a){
