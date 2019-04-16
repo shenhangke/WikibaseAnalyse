@@ -71,6 +71,7 @@ public class AnalyseItemData implements Serializable{
 	 * Return type: Dataset<Row>
 	 */
 	public Dataset<Row> itemInfoAnalyse(Dataset<Item> originData,String tableName){
+		System.out.println("the store file path is: "+this.getStoreFilePath(tableName));
 		JavaRDD<Row> itemInfoRdd = originData.map(new MapFunction<Item,Row>(){
 
 			public Row call(Item item) throws Exception {
@@ -198,10 +199,13 @@ public class AnalyseItemData implements Serializable{
 	}
 	
 	private String getStoreFilePath(String url){
+		System.out.println("the url is: "+url);
 		String[] aStrList=url.split(":");
 		if(aStrList.length==2){
+			System.out.println("the length is 2");
 			return aStrList[1];
 		}else{
+			System.out.println("the str length is : "+aStrList.length);
 			return null;
 		}
 	}
