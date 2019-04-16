@@ -32,7 +32,7 @@ public class FileConstValue {
 			ServerFileUrlSourceDir="file://"+ServerSourceDir;
 			ServerFileName=ServerFileUrlSourceDir+"/Datasets/wikidata/wikidata-20181203-all/wikidata-20181203-all.json";
 			ServerTestFileName=ServerFileUrlSourceDir+"/Datasets/wikidata/wikidata-20181203-all/head_10.txt";
-			ServerInfoFile=ServerSourceDir+"/shenhangke/info.txt";
+			ServerInfoFile=ServerFileUrlSourceDir+"/shenhangke/info.txt";
 			System.out.println("the serverInfoFile path is: "+ServerInfoFile);
 		}
 		

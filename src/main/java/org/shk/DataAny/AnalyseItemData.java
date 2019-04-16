@@ -63,6 +63,13 @@ public class AnalyseItemData implements Serializable{
 		});
 	}
 	
+	private StructType getSparkWriteToFileSchema(){
+		StructField content=new StructField("content", DataTypes.StringType, true, Metadata.empty());
+		StructField[] contentList={content};
+		StructType schema=DataTypes.createStructType(contentList);
+		return schema;
+	}
+	
 	/**
 	 * 
 	 * Description 
@@ -111,7 +118,7 @@ public class AnalyseItemData implements Serializable{
 		Dataset<Row> infoData = this.session.createDataFrame(itemInfoRdd, schema);
 		if(this.isWriteToFile(tableName)){
 			//infoData.javaRDD().saveAsTextFile(this.getStoreFilePath(tableName));
-			infoData.map(new MapFunction<Row,Row>(){
+			JavaRDD<Row> witeToFileRdd = infoData.map(new MapFunction<Row,Row>(){
 
 				@Override
 				public Row call(Row row) throws Exception {
@@ -126,7 +133,8 @@ public class AnalyseItemData implements Serializable{
 					return RowFactory.create(multiToSingle);
 				}
 				
-			},Encoders.bean(Row.class)).write().mode(SaveMode.Append).text(this.getStoreFilePath(tableName));
+			},Encoders.bean(Row.class)).javaRDD();
+			this.session.createDataFrame(witeToFileRdd, this.getSparkWriteToFileSchema()).write().mode(SaveMode.Append).text(this.getStoreFilePath(tableName));
 		}else{
 			infoData.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
 		}
