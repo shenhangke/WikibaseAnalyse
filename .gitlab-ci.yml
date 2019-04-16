@@ -12,10 +12,12 @@ build-maven:
     - yum -y install docker   
     - systemctl enable docker  
     - systemctl start docker
-    - rm -rf ${SHARED_DIR}/shenhangke
+    - name="shenhangke"
+    - rm -rf ${SHARED_DIR}/Builds/${name}/runtimeData
   script:
     - name="shenhangke"
     - mkdir -p ${SHARED_DIR}/Builds/${name}
+    - mkdir -p ${SHARED_DIR}/Builds/${name}/runtimeData
     - cp -r ./target/* ${SHARED_DIR}/Builds/${name}
   when: always
 

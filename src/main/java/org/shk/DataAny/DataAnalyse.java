@@ -95,7 +95,7 @@ public class DataAnalyse implements Serializable{
 	
 	
 	public Dataset<Item> PreHandleData(String fileName){
-		Dataset<String> originFileData=this.session.read().textFile(fileName).persist(StorageLevel.MEMORY_AND_DISK());
+		Dataset<String> originFileData=this.session.read().textFile(fileName);
 		Dataset<Item> preHandledData=originFileData.filter(new FilterFunction<String>() {
 			/*
 			 * (non-Javadoc) delete the superfluous data
