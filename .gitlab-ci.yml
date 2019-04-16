@@ -24,6 +24,8 @@ run_project:
     - S4-B
   script:
     - name="shenhangke"
+    - echo ${SHARED_DIR}
+    - ls ${SHARED_DIR}/Datasets/wikidata/wikidata-20181203-all
     - "${SPARK_DIR}/bin/spark-submit --class org.shk.DataAny.App --packages com.alibaba:fastjson:1.2.57,mysql:mysql-connector-java:8.0.15 ${SHARED_DIR}/Builds/${name}/DataAny-0.0.1-SNAPSHOT.jar"
   when: always
 
