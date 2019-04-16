@@ -25,6 +25,7 @@ import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.RelationalGroupedDataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
+import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.IntegerType;
@@ -83,6 +84,24 @@ public class App
     		System.out.println("env key: "+entry.getKey());
     		System.out.println("env value: "+entry.getValue());
     	}
+    	/*SparkSession session=SparkSession.builder().
+				appName("WikiAnalyse").master("local[3]").config("spark.driver.memory","8g").
+				config("spark.driver.cores",3).config("spark.executor.memory","2g").getOrCreate();
+    	
+    	ArrayList<Row> list=new ArrayList<Row>();
+    	list.add(RowFactory.create("123","test"));
+    	list.add(RowFactory.create("2312","qwe"));
+    	
+    	StructField num=new StructField("num", DataTypes.StringType, true, Metadata.empty());
+    	StructField type=new StructField("type", DataTypes.StringType, true, Metadata.empty());
+    	StructField[] fieldList={num,type};
+    	
+    	StructType schema=DataTypes.createStructType(fieldList);
+    	
+    	session.createDataFrame(list, schema).javaRDD().saveAsTextFile("D:\\MyEclpse WorkSpace\\DataAny\\TestData\\tt.txt");*/
+    	/*.write().mode(SaveMode.Append).text("D:\\MyEclpse WorkSpace\\DataAny\\TestData\\tt.txt");save("D:\\MyEclpse WorkSpace\\DataAny\\TestData\\tt.txt");*/
+    	
+    	
     	/*SparkSession session=SparkSession.builder().
 				appName("WikiAnalyse").master("local[3]").config("spark.driver.memory","8g").
 				config("spark.driver.cores",3).config("spark.executor.memory","2g").getOrCreate();
