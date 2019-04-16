@@ -15,7 +15,7 @@ build-maven:
   script:
     - name="shenhangke"
     - mkdir -p ${SHARED_DIR}/Builds/${name}
-    - ls @(pwd)
+    - ls $(pwd)
     - docker run -i --rm -v "$PWD":/usr/src/mymaven -v "$HOME/.m2":/root/.m2 -w $(pwd) maven mvn clean package
     - cp -r maven/target/* ${SHARED_DIR}/Builds/${name}
   when: always
