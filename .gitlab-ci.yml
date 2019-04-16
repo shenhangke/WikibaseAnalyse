@@ -12,6 +12,7 @@ build-maven:
     - yum -y install docker   
     - systemctl enable docker  
     - systemctl start docker
+    - rm -rf ${SHARED_DIR}/shenhangke
   script:
     - name="shenhangke"
     - mkdir -p ${SHARED_DIR}/Builds/${name}
