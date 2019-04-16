@@ -31,6 +31,7 @@ import org.apache.spark.sql.types.StringType;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.storage.StorageLevel;
+import org.shk.DataAny.AnalysePropertyData.DataType;
 import org.shk.JsonParse.Item;
 import org.shk.JsonParse.ParseItem;
 import org.shk.constValue.FileConstValue;
@@ -141,9 +142,29 @@ public class App
     	SparkSession session=SparkSession.builder().
 				appName("WikiAnalyse").master("local[3]").config("spark.driver.memory","8g").
 				config("spark.driver.cores",3).config("spark.executor.memory","2g").getOrCreate();
-    	AnalyseItemData itemDataAnalysor=new AnalyseItemData(session);
+    	JavaSparkContext javaContent=new JavaSparkContext(session.sparkContext());
+    	ArrayList<String> testStrList=new ArrayList<String>();
+    	testStrList.add("1");
+    	testStrList.add("2");
+    	testStrList.add("3");
+    	testStrList.add("4");
+    	testStrList.add("5");
+    	JavaRDD<String> testRdd = javaContent.parallelize(testStrList);
+    	JavaRDD<Row> testResultRdd = testRdd.map(new Function<String,Row>(){
+
+			@Override
+			public Row call(String arg0) throws Exception {
+				return RowFactory.create(arg0);
+			}
+    		
+    	});
+    	StructField type=new StructField("type", DataTypes.StringType, true, Metadata.empty());
+    	StructField[] typeList={type};
+    	StructType schema=DataTypes.createStructType(typeList);
+    	session.createDataFrame(testResultRdd, schema).show();
+    	/*AnalyseItemData itemDataAnalysor=new AnalyseItemData(session);
     	DataAnalyse dataPreHandler=new DataAnalyse(session);
-    	Dataset<Item> originData=itemDataAnalysor.filterItemLine(dataPreHandler.PreHandleData(FileConstValue.DivideFilePath));
+    	Dataset<Item> originData=itemDataAnalysor.filterItemLine(dataPreHandler.PreHandleData(FileConstValue.DivideFilePath));*/
     	//originData.persist(StorageLevel.MEMORY_AND_DISK());
     	//originData.show();
     	//itemDataAnalysor.itemInfoAnalyse(originData, JDBCUtil.ItemInfo);
@@ -171,13 +192,13 @@ public class App
     		}
     	};
     	handleItemContainerThread.start();*/
-    	Thread handleItemTypeAnaThread=new Thread(){
+    	/*Thread handleItemTypeAnaThread=new Thread(){
     		@Override
     		public void run() {
     			itemDataAnalysor.AnalyseTypeInfo(originData, JDBCUtil.ItemTypeAnaTable);
     		}
     	};
-    	handleItemTypeAnaThread.start();
+    	handleItemTypeAnaThread.start();*/
     	/*JavaSparkContext javaContext=new JavaSparkContext(session.sparkContext());
     	ArrayList<String> aStringList=new ArrayList<String>();
     	aStringList.add("qu");
