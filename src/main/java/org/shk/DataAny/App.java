@@ -87,7 +87,7 @@ public class App
     	AnalyseItemData itemDataAnalysor=new AnalyseItemData(session);
     	DataAnalyse dataPreHandler=new DataAnalyse(session);
     	Dataset<Item> originData=itemDataAnalysor.filterItemLine(dataPreHandler.PreHandleData(FileConstValue.ServerTestFileName));
-    	itemDataAnalysor.AnalyseTypeInfo(originData, FileConstValue.PrefixSaveToFile+FileConstValue.ServerTestFileName);
+    	itemDataAnalysor.itemInfoAnalyse(originData, FileConstValue.PrefixSaveToFile+FileConstValue.ServerTestFileName);
     	/*AnalyseItemData itemDataAnalysor=new AnalyseItemData(session);
     	DataAnalyse dataPreHandler=new DataAnalyse(session);
     	Dataset<Item> originData=itemDataAnalysor.filterItemLine(dataPreHandler.PreHandleData(FileConstValue.DivideFilePath));*/
