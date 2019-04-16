@@ -201,9 +201,9 @@ public class AnalyseItemData implements Serializable{
 	private String getStoreFilePath(String url){
 		System.out.println("the url is: "+url);
 		String[] aStrList=url.split(":");
-		if(aStrList.length==2){
+		if(aStrList.length==3){
 			System.out.println("the length is 2");
-			return aStrList[1];
+			return aStrList[1]+":"+aStrList[2];
 		}else{
 			System.out.println("the str length is : "+aStrList.length);
 			return null;
