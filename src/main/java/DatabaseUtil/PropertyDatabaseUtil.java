@@ -268,8 +268,13 @@ public class PropertyDatabaseUtil {
 		}else{
 			if(session==null){
 				System.out.println("the session is null");
+			}else{
+				System.out.println("the session is not null");
 			}
 			Dataset<String> inputPropertyInfo = session.read().textFile(FileConstValue.ServerPropertyDataFileReadPath);
+			if(inputPropertyInfo==null){
+				System.out.println("the inputPropertyInfo is null");
+			}
 			JavaRDD<Row> handledRdd = inputPropertyInfo.map(new MapFunction<String,Row>(){
 
 				@Override
