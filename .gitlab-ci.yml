@@ -10,3 +10,4 @@ script:
   - cd ${SHARED_DIR}/Builds/${name}
   - tar -zcvf runtimeData.tar.gz runtime
   - split -b 200m -d runtimeData.tar.gz runtimeData.tar.gz_
+when: always
