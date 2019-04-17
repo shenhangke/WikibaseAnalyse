@@ -9,6 +9,8 @@ public class FileConstValue {
 	public static final String TESTFILEPATH="E:\\KgData\\Test_Parse.json";
 	public static final String DivideFilePath=SourceFileDir+"div_1.json";
 	public static final String TestSingleLine=SourceFileDir+"singleLine.json";
+	public static final String PropertyDataFileDir="D:\\MyEclpse WorkSpace\\DataAny\\Data\\PropertyData";
+	public static final String PropertyDataFileReadPath="D:\\MyEclpse WorkSpace\\DataAny\\Data\\realData\\PropertyIndexInfo.txt";
 	
 	public static final String tailFileTest=SourceFileDir+"tailFile.txt";
 	
@@ -19,6 +21,12 @@ public class FileConstValue {
 	public static String ServerTestFileName="";
 	public static String ServerInfoFile="";
 	public static String ServerFileUrlSourceDir="";
+	
+	public static String ServerPropertyDataFileReadPath="";
+	
+	public static String ServerItemAlias_WritePath="";
+	public static String ServerItemContainer_WritePath="";
+	public static String ServerItemTypeInfo_WritePath="";
 	
 	
 	static{
@@ -33,6 +41,10 @@ public class FileConstValue {
 			ServerFileName=ServerFileUrlSourceDir+"/Datasets/wikidata/wikidata-20181203-all/wikidata-20181203-all.json";
 			ServerTestFileName=ServerFileUrlSourceDir+"/Datasets/wikidata/wikidata-20181203-all/head_10.txt";
 			ServerInfoFile=ServerFileUrlSourceDir+"/Builds/shenhangke/runtimeData";
+			ServerPropertyDataFileReadPath=ServerFileUrlSourceDir+"/Builds/shenhangke/Data/PropertyIndexInfo.txt";
+			ServerItemAlias_WritePath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/ItemAliasInfo";
+			ServerItemContainer_WritePath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/ItemContainerInfo";
+			ServerItemTypeInfo_WritePath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/ItemTypeAnalyseInfo";
 			System.out.println("the serverInfoFile path is: "+ServerInfoFile);
 		}
 		

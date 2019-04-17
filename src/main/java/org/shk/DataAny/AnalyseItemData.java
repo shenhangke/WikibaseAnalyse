@@ -171,7 +171,25 @@ public class AnalyseItemData implements Serializable{
 		StructField[] aFieldList={PIDField,AliasName};
 		StructType schema=DataTypes.createStructType(aFieldList);
 		Dataset<Row> result = this.session.createDataFrame(itemAliasRdd, schema);
-		result.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
+		if(this.isWriteToFile(tableName)){
+			result.map(new MapFunction<Row,String>(){
+
+				@Override
+				public String call(Row row) throws Exception {
+					String sum="";
+					for(int i=0;i<row.size();i++){
+						sum+=row.getString(i);
+						if(i!=row.size()-1){
+							sum+="&&&&";
+						}
+					}
+					return sum;
+				}
+				
+			},Encoders.STRING()).write().mode(SaveMode.Overwrite).text(this.getStoreFilePath(tableName));
+		}else{
+			result.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
+		}
 		return result;
 	}
 	
@@ -227,7 +245,7 @@ public class AnalyseItemData implements Serializable{
 					aIniArr[i]=0x0000000000000000L;
 				}
 				for(Entry<String,Item.Property> entry:originItem.claims.entrySet()){
-					int propertyIndex=PropertyDatabaseUtil.GetPropertyIndex(entry.getKey());
+					int propertyIndex=PropertyDatabaseUtil.GetPropertyIndex(AnalyseItemData.this.session,entry.getKey(),true);
 					//System.out.println("the property ID is: "+propertyIndex);
 					if(propertyIndex==-1){
 						//System.out.println("get property index error");
@@ -264,8 +282,12 @@ public class AnalyseItemData implements Serializable{
 		}
 		StructType schema = DataTypes.createStructType(aFieldList);
 		Dataset<Row> containerResult = this.session.createDataFrame(containRDD, schema);
-		containerResult.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, 
-				JDBCUtil.GetWriteProperties(tableName));
+		if(this.isWriteToFile(tableName)){
+			containRDD.saveAsTextFile(this.getStoreFilePath(tableName));
+		}else{
+			containerResult.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, 
+					JDBCUtil.GetWriteProperties(tableName));
+		}
 		return containerResult;
 	}
 	
@@ -327,7 +349,6 @@ public class AnalyseItemData implements Serializable{
 		StructField dataType=new StructField("DataType", DataTypes.ByteType, true, Metadata.empty());
 		StructField[] fieldList={type,dataType};
 		StructType schema=DataTypes.createStructType(fieldList);
-		this.session.createDataFrame(dateTypeRdd, schema).write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, dataTypeTableName, JDBCUtil.GetWriteProperties(dataTypeTableName));
 		
 		JavaRDD<Row> typeRdd = originData.flatMap(new FlatMapFunction<Item,String>() {
 
@@ -368,8 +389,13 @@ public class AnalyseItemData implements Serializable{
 				return RowFactory.create(value._1,type);
 			}
 		});
-		
-		this.session.createDataFrame(typeRdd, schema).write().mode(SaveMode.Append).jdbc(JDBCUtil.DB_URL, dataTypeTableName, JDBCUtil.GetWriteProperties(dataTypeTableName));
+		if(this.isWriteToFile(dataTypeTableName)){
+			dateTypeRdd.saveAsTextFile(this.getStoreFilePath(dataTypeTableName));
+			typeRdd.saveAsTextFile(this.getStoreFilePath(dataTypeTableName));
+		}else{
+			this.session.createDataFrame(dateTypeRdd, schema).write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, dataTypeTableName, JDBCUtil.GetWriteProperties(dataTypeTableName));
+			this.session.createDataFrame(typeRdd, schema).write().mode(SaveMode.Append).jdbc(JDBCUtil.DB_URL, dataTypeTableName, JDBCUtil.GetWriteProperties(dataTypeTableName));
+		}
 	}
 	
 }
