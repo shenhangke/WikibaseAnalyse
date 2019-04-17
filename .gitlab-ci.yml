@@ -14,7 +14,7 @@ build-maven:
     - systemctl start docker
     - name="shenhangke"
     - cd ${SHARED_DIR}/Builds/${name}
-    - tar -zcvf runtimeData.tar.gz runtime
+    - tar -zcvf runtimeData.tar.gz runtimeData
     - split -b 200m -d runtimeData.tar.gz runtimeData.tar.gz_
   script:
     - name="shenhangke"
