@@ -266,6 +266,9 @@ public class PropertyDatabaseUtil {
 		if(!readFromFile){
 			return GetPropertyIndex(PropertyId);
 		}else{
+			if(session==null){
+				System.out.println("the session is null");
+			}
 			Dataset<String> inputPropertyInfo = session.read().textFile(FileConstValue.ServerPropertyDataFileReadPath);
 			JavaRDD<Row> handledRdd = inputPropertyInfo.map(new MapFunction<String,Row>(){
 
