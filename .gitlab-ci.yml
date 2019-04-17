@@ -5,7 +5,7 @@ zipRuntime:
   - stage: zipRuntimeData
 tags:
   - S4-B
-script:
+script: &build_script
   - name="shenhangke"
   - cd ${SHARED_DIR}/Builds/${name}
   - tar -zcvf runtimeData.tar.gz runtime
