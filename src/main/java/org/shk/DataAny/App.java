@@ -20,8 +20,8 @@ public class App
     	 * load class PropertyDatabaseUtil to load the static code
     	 */
     	Class.forName("DatabaseUtil.PropertyDatabaseUtil");
-    	analyseItem.itemAliasAnalyse(originDataset, FileConstValue.PrefixSaveToFile+
-    			FileConstValue.ServerItemAlias_WritePath);
+    	/*analyseItem.itemAliasAnalyse(originDataset, FileConstValue.PrefixSaveToFile+
+    			FileConstValue.ServerItemAlias_WritePath);*/
     	analyseItem.itemContainerAnalyse(originDataset, FileConstValue.PrefixSaveToFile+
     			FileConstValue.ServerItemContainer_WritePath);
     }

@@ -286,6 +286,7 @@ public class AnalyseItemData implements Serializable{
 		Dataset<Row> containerResult = this.session.createDataFrame(containRDD, schema);
 		containerResult.show();
 		if(this.isWriteToFile(tableName)){
+			System.out.println("handle file");
 			File aFile=new File(this.getStoreFilePath(tableName));
 			if(aFile.exists()){
 				aFile.delete();
