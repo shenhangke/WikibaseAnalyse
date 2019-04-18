@@ -16,6 +16,7 @@ org\shk\DataAny\DataAnalyse$5.class
 DatabaseUtil\PropertyDatabaseUtil.class
 org\shk\DataAny\DataAnalyse.class
 DatabaseUtil\PropertyDatabaseUtil$1.class
+org\shk\constValue\SparkConst.class
 org\shk\DataAny\AnalysePropertyData$DataType.class
 org\shk\JsonParse\ParsePropertyDataValue$Type.class
 org\shk\JsonParse\Item$LanItem.class
@@ -24,7 +25,6 @@ org\shk\JsonParse\ParsePropertyDataValue$DataValue.class
 org\shk\JsonParse\Item$RankType.class
 org\shk\JsonParse\Item.class
 org\shk\DataAny\DataAnalyse$2.class
-org\shk\DataAny\childNode.class
 org\shk\JsonParse\Item$Property$PropertyInfo$MainSnak.class
 org\shk\JsonParse\Item$MainSnakType.class
 org\shk\JsonParse\Item$Property$PropertyInfo.class
@@ -42,7 +42,6 @@ org\shk\JsonParse\Item$Property$PropertyInfo$MainSnak$DataValue.class
 org\shk\JsonParse\Item$Property$PropertyInfo$PropertyQualifier$QualifierInfo.class
 org\shk\DataAny\AnalysePropertyData$6.class
 org\shk\DataAny\AnalysePropertyData$9.class
-org\shk\DataAny\Child.class
 org\shk\DataAny\DataAnalyse$4.class
 org\shk\JsonParse\Item$Property$PropertyInfo$ReferenceInfo.class
 org\shk\JsonParse\Item$PropertyType.class
@@ -54,8 +53,6 @@ DatabaseUtil\PropertyDatabaseUtil$2.class
 org\shk\JsonParse\Item$EntityType.class
 org\shk\DataAny\AnalysePropertyData$10.class
 org\shk\DataAny\App.class
-org\shk\DataAny\FatherNode.class
-org\shk\DataAny\Test.class
 org\shk\DataAny\AnalysePropertyData$ValueType.class
 org\shk\DataAny\DataAnalyse$3.class
 org\shk\DataAny\AnalyseItemData$6.class
@@ -63,7 +60,6 @@ org\shk\DataAny\AnalysePropertyData$5.class
 org\shk\fileUtil\FileSplitUtil.class
 org\shk\DataAny\AnalyseItemData$11.class
 org\shk\DataAny\AnalysePropertyData.class
-org\shk\DataAny\Father.class
 org\shk\JsonParse\ParseItem.class
 org\shk\DataAny\AnalyseItemData$2.class
 org\shk\DataAny\AnalysePropertyData$ValuePair.class

@@ -78,7 +78,7 @@ public class AnalyseItemData implements Serializable{
 	 * Return type: Dataset<Row>
 	 */
 	public Dataset<Row> itemInfoAnalyse(Dataset<Item> originData,String tableName){
-		System.out.println("the store file path is: "+this.getStoreFilePath(tableName));
+		//System.out.println("the store file path is: "+this.getStoreFilePath(tableName));
 		JavaRDD<Row> itemInfoRdd = originData.map(new MapFunction<Item,Row>(){
 
 			public Row call(Item item) throws Exception {
@@ -245,7 +245,9 @@ public class AnalyseItemData implements Serializable{
 					aIniArr[i]=0x0000000000000000L;
 				}
 				for(Entry<String,Item.Property> entry:originItem.claims.entrySet()){
-					int propertyIndex=PropertyDatabaseUtil.GetPropertyIndex(AnalyseItemData.this.session,entry.getKey(),true);
+					//System.out.println("the property key is: "+entry.getKey());
+					int propertyIndex=PropertyDatabaseUtil.GetPropertyIndex(entry.getKey(),true);
+					//System.out.println("the propertyIndex is: "+propertyIndex);
 					//System.out.println("the property ID is: "+propertyIndex);
 					if(propertyIndex==-1){
 						//System.out.println("get property index error");
@@ -282,7 +284,12 @@ public class AnalyseItemData implements Serializable{
 		}
 		StructType schema = DataTypes.createStructType(aFieldList);
 		Dataset<Row> containerResult = this.session.createDataFrame(containRDD, schema);
+		containerResult.show();
 		if(this.isWriteToFile(tableName)){
+			File aFile=new File(this.getStoreFilePath(tableName));
+			if(aFile.exists()){
+				aFile.delete();
+			}
 			containRDD.saveAsTextFile(this.getStoreFilePath(tableName));
 		}else{
 			containerResult.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, 

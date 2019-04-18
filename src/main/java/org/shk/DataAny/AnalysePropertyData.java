@@ -260,7 +260,7 @@ public class AnalysePropertyData implements Serializable{
 					aIniArr[i]=0x0000000000000000L;
 				}
 				for(Entry<String,Item.Property> entry:originItem.claims.entrySet()){
-					int propertyIndex=PropertyDatabaseUtil.GetPropertyIndex(null,entry.getKey(),false);
+					int propertyIndex=PropertyDatabaseUtil.GetPropertyIndex(entry.getKey(),false);
 					//System.out.println("the property ID is: "+propertyIndex);
 					if(propertyIndex==-1){
 						//System.out.println("get property index error");

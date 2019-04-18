@@ -7,13 +7,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.MapFunction;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.AnalysisException;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
@@ -25,16 +31,60 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+import org.shk.DataAny.App;
 import org.shk.JsonParse.Item;
 import org.shk.JsonParse.Item.Property;
 import org.shk.JsonParse.Item.Property.PropertyInfo;
 import org.shk.JsonParse.ParseItem;
 import org.shk.constValue.FileConstValue;
+import org.shk.constValue.SparkConst;
 
 import com.alibaba.fastjson.JSONObject;
 
 public class PropertyDatabaseUtil {
 	private static final String GetLineFromDatabaseStatement="select Item from "+JDBCUtil.PropertyItem+" where PID=?;";
+	public static Broadcast<HashMap<String, Integer>> BroadcastIndex=null;
+	
+	static{
+		Dataset<String> inputPropertyInfo=SparkConst.MainSession.read().textFile(FileConstValue.ServerPropertyDataFileReadPath);
+		JavaRDD<Row> handledRdd = inputPropertyInfo.map(new MapFunction<String,Row>(){
+
+			@Override
+			public Row call(String value) throws Exception {
+				String[] propertyList=value.split(",");
+				if(propertyList.length==2){
+					for(int i=0;i<propertyList.length;i++){
+						propertyList[i]=propertyList[i].replace("[", "");
+						propertyList[i]=propertyList[i].replace("]", "");
+					}
+					return RowFactory.create(propertyList);
+				}else{
+					return RowFactory.create("","");
+				}
+			}
+		}, Encoders.bean(Row.class)).javaRDD();
+		
+		StructField index=new StructField("PIndex", DataTypes.StringType, true, Metadata.empty());
+		StructField id=new StructField("PID", DataTypes.StringType, true, Metadata.empty());
+		StructField[] fieldList={index,id};
+		StructType schema=DataTypes.createStructType(fieldList);
+		try{
+			List<Row> propertyIndexList = SparkConst.MainSession.createDataFrame(handledRdd, schema).collectAsList();
+			HashMap<String,Integer> propertyIndex=new HashMap<String,Integer>();
+			for(int i=0;i<propertyIndexList.size();i++){
+				propertyIndex.put(propertyIndexList.get(i).getString(1), 
+						new Integer(propertyIndexList.get(i).getString(0)));
+			}
+			JavaSparkContext javaContext=
+					new JavaSparkContext(SparkConst.MainSession.sparkContext());
+			BroadcastIndex= javaContext.broadcast(propertyIndex);
+			//SparkConst.MainSession.sparkContext().broadcast(propertyIndex, evidence$11)
+		}catch(NumberFormatException e){
+			System.out.println("transform string index to int index error,the erroe message is: "+e.getMessage());
+		}catch(Exception e){
+			System.out.println("init propertyUtil error,the error message is: "+e.getMessage());
+		}
+	}
 	
 	public static void WriteOneLineItemTOFile(String fileName,String pID) throws SQLException{
 		Connection connection=null;
@@ -262,50 +312,14 @@ public class PropertyDatabaseUtil {
 		}
 	}
 	
-	public static int GetPropertyIndex(SparkSession session,String PropertyId,boolean readFromFile) throws SQLException, AnalysisException{
+	
+	
+	
+	public static int GetPropertyIndex(String PropertyId,boolean readFromFile) throws SQLException, AnalysisException{
 		if(!readFromFile){
 			return GetPropertyIndex(PropertyId);
 		}else{
-			if(session==null){
-				System.out.println("the session is null");
-			}else{
-				System.out.println("the session is not null");
-			}
-			Dataset<String> inputPropertyInfo = session.read().textFile(FileConstValue.ServerPropertyDataFileReadPath);
-			if(inputPropertyInfo==null){
-				System.out.println("the inputPropertyInfo is null");
-			}
-			JavaRDD<Row> handledRdd = inputPropertyInfo.map(new MapFunction<String,Row>(){
-
-				@Override
-				public Row call(String value) throws Exception {
-					String[] propertyList=value.split(",");
-					if(propertyList.length==2){
-						for(int i=0;i<propertyList.length;i++){
-							propertyList[i]=propertyList[i].replace("[", "");
-							propertyList[i]=propertyList[i].replace("]", "");
-						}
-						return RowFactory.create(propertyList);
-					}else{
-						return RowFactory.create("","");
-					}
-				}
-			}, Encoders.bean(Row.class)).javaRDD();
-			
-			StructField index=new StructField("PIndex", DataTypes.StringType, true, Metadata.empty());
-			StructField id=new StructField("PID", DataTypes.StringType, true, Metadata.empty());
-			StructField[] fieldList={index,id};
-			StructType schema=DataTypes.createStructType(fieldList);
-			session.createDataFrame(handledRdd, schema).createGlobalTempView("PropertyIndex");
-			
-			Dataset<Row> querySet=session.sql("select PIndex from global_temp.PropertyIndex where PID=\""+PropertyId+"\"");
-			List<Row> queryResultList = querySet.collectAsList();
-			if(queryResultList.size()==1){
-				return Integer.parseInt(queryResultList.get(0).getString(0));
-			}else{
-				return -1;
-			}
-			
+			return BroadcastIndex.value().get(PropertyId);
 		}
 	}
 	
