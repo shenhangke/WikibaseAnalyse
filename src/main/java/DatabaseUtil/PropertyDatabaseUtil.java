@@ -324,6 +324,7 @@ public class PropertyDatabaseUtil {
 			}else if(BroadcastIndex.value()==null){
 				System.out.println("the broadcaseIndex.value() is null");
 			}else if(BroadcastIndex.value().get(PropertyId)==null){
+				System.out.println(PropertyId);
 				System.out.println("get real index is null");
 			}
 			return BroadcastIndex.value().get(PropertyId);
