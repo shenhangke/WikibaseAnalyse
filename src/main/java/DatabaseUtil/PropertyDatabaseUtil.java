@@ -326,6 +326,7 @@ public class PropertyDatabaseUtil {
 			}else if(BroadcastIndex.value().get(PropertyId)==null){
 				System.out.println(PropertyId);
 				System.out.println("get real index is null");
+				return -1;
 			}
 			return BroadcastIndex.value().get(PropertyId);
 		}
