@@ -22,8 +22,8 @@ public class App
     	Class.forName("DatabaseUtil.PropertyDatabaseUtil");
     	/*analyseItem.itemAliasAnalyse(originDataset, FileConstValue.PrefixSaveToFile+
     			FileConstValue.ServerItemAlias_WritePath);*/
-    	analyseItem.itemContainerAnalyse(originDataset, FileConstValue.PrefixSaveToFile+
-    			FileConstValue.ServerItemContainer_WritePath);
+    	analyseItem.AnalyseTypeInfo(originDataset, FileConstValue.PrefixSaveToFile+
+    			FileConstValue.ServerItemTypeInfo_WritePath);
     }
 }
 

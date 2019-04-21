@@ -327,7 +327,7 @@ public class AnalyseItemData implements Serializable{
 				if(aRowList.size()>0){
 					return aRowList.iterator();
 				}else{
-					System.out.println("map to String error,the return is null");
+					//System.out.println("map to String error,the return is null");
 					aRowList.add("null");
 					return aRowList.iterator();
 				}
@@ -398,8 +398,11 @@ public class AnalyseItemData implements Serializable{
 			}
 		});
 		if(this.isWriteToFile(dataTypeTableName)){
-			dateTypeRdd.saveAsTextFile(this.getStoreFilePath(dataTypeTableName));
-			typeRdd.saveAsTextFile(this.getStoreFilePath(dataTypeTableName));
+			File aTempFile=new File(this.getStoreFilePath(dataTypeTableName));
+			if(aTempFile.exists()){
+				aTempFile.delete();
+			}
+			typeRdd.union(dateTypeRdd).saveAsTextFile(this.getStoreFilePath(dataTypeTableName));
 		}else{
 			this.session.createDataFrame(dateTypeRdd, schema).write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, dataTypeTableName, JDBCUtil.GetWriteProperties(dataTypeTableName));
 			this.session.createDataFrame(typeRdd, schema).write().mode(SaveMode.Append).jdbc(JDBCUtil.DB_URL, dataTypeTableName, JDBCUtil.GetWriteProperties(dataTypeTableName));
