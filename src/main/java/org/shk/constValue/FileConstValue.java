@@ -30,6 +30,8 @@ public class FileConstValue {
 	public static String ServerItemContainer_WritePath="";
 	public static String ServerItemTypeInfo_WritePath="";
 	
+	public static String HandledItemInfoFileDir="E:\\KgData\\ItemInfo\\runtimeData\\runtimeData";
+	
 	
 	static{
 		Map<String,String> env=System.getenv();
