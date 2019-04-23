@@ -17,6 +17,7 @@ build-maven:
     - mkdir -p ${SHARED_DIR}/Builds/${name}
     - mkdir -p ${SHARED_DIR}/Builds/${name}/DataReposity
     - mkdir -p ${SHARED_DIR}/Builds/${name}/Data
+    - rm -rf ${SHARED_DIR}/Builds/${name}/DataReposity/ItemTypeAnalyseInfo
     - ls ./Data
     - ls ./Data/realData/
     - cp -r ./Data/realData/PropertyIndexInfo.txt ${SHARED_DIR}/Builds/${name}/Data/PropertyIndexInfo.txt
