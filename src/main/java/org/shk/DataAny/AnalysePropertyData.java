@@ -1,11 +1,13 @@
 package org.shk.DataAny;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import org.apache.commons.collections.iterators.EntrySetMapIterator;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.api.java.function.FlatMapFunction;
@@ -22,9 +24,12 @@ import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.shk.JsonParse.Item;
+import org.shk.JsonParse.Item.LanItem;
 import org.shk.JsonParse.Item.Property;
 import org.shk.JsonParse.Item.Property.PropertyInfo;
 import org.shk.JsonParse.ParseItem;
+import org.shk.constValue.FileConstValue;
+import org.shk.constValue.SparkConst;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonObject;
@@ -141,16 +146,111 @@ public class AnalysePropertyData implements Serializable{
 		}
 	}
 	
-	public Dataset<Row> readDataFromDatabase(String databaseTableName){
-		return this.session.read().jdbc(JDBCUtil.DB_URL, databaseTableName, JDBCUtil.GetReadProperties(databaseTableName));
+	public Dataset<Item> readPropertyDataFromFile(String path){
+		DataAnalyse analysor=new DataAnalyse(this.session);
+		Dataset<Item> originData=analysor.extractDataItem(path);
+		return originData.filter(new FilterFunction<Item>() {
+
+			@Override
+			public boolean call(Item value) throws Exception {
+				if(value.type==Item.EntityType.Property){
+					if(value.entityId.trim().toUpperCase().contains("Q")){
+						//To confirm the entity is property type
+						return true;
+					}else{
+						return false;
+					}
+				}else{
+					return false;
+				}
+			}
+		});
 	}
 	
 	/**
 	 * 
-	 * Description from database 
+	 * Description 
+	 * @param originData
+	 * @param fileOrDatabase
+	 * @param argu
+	 * @return
+	 * Return type: Dataset<Row>
+	 */
+	public Dataset<Row> infoAnalyse(Dataset<Item> originData,SparkConst.FileOrDatabase fileOrDatabase,String argu){
+		Dataset<String> infoDataset = originData.map(new MapFunction<Item,String>(){
+
+			@Override
+			public String call(Item value) throws Exception {
+				//for the property,the id attribute is necessary 
+				String pId=value.entityId;
+				String pLabel="";
+				//there is a situation that the label value is empty
+				Item.LanItem labelItem=value.labels.get("en");
+				if(labelItem==null){
+					for(Entry<String,LanItem> lanItem:value.labels.entrySet()){
+						pLabel=lanItem.getValue().value;
+						break;
+					}
+				}else{
+					pLabel=labelItem.value;
+				}
+				if((pLabel.trim().equals(""))||(pLabel==null)){
+					pLabel="null";
+				}
+				String pDescription="";
+				Item.LanItem descriptionItem=value.descriptions.get("en");
+				if(descriptionItem==null){
+					for(Entry<String,LanItem> desItem:value.descriptions.entrySet()){
+						pDescription=desItem.getValue().value;
+					}
+				}else{
+					pDescription=descriptionItem.value;
+				}
+				if((pDescription==null)||(pDescription.trim().equals(""))){
+					pDescription="null";
+				}
+				//return RowFactory.create(pId,pLabel,pDescription);
+				return pId+FileConstValue.StrSeparator+pLabel+FileConstValue.StrSeparator+pDescription;
+			}
+			//the name is nessary
+		}, Encoders.STRING());
+		
+		if(fileOrDatabase==SparkConst.FileOrDatabase.File){
+			File storeFile=new File(argu);
+			if(storeFile.exists()){
+				storeFile.delete();
+			}
+			infoDataset.write().mode(SaveMode.Overwrite).text(argu);
+		}else{
+			//Store in DataBase where executor in local or remote server has mysql
+		}
+		
+		return infoDataset.map(new MapFunction<String,Row>(){
+
+			@Override
+			public Row call(String value) throws Exception {
+				String[] realValueArr=value.split(FileConstValue.StrSeparator);
+				if(realValueArr.length==3){
+					return RowFactory.create(realValueArr);
+				}else{
+					System.out.println("the info str is incorrect");
+					return null;
+				}
+			}
+			
+		}, Encoders.bean(Row.class));
+		
+	}
+	
+	/**
+	 * 
+	 * Description 
+	 * @param originDataFromDatabase
+	 * @param writeFileOrDataBase
+	 * @param argu
 	 * Return type: void
 	 */
-	public void propertyInfoAnalyse(Dataset<Row> originDataFromDatabase){
+	public void propertyInfoAnalyse(Dataset<Row> originDataFromDatabase,SparkConst.FileOrDatabase writeFileOrDataBase,String argu){
 		//Dataset<Row> originData=this.session.read().jdbc(JDBCUtil.DB_URL, JDBCUtil.PropertyItem,JDBCUtil.GetReadProperties(JDBCUtil.PropertyItem));
 		Dataset<Item> originItem=originDataFromDatabase.map(new MapFunction<Row,Item>() {
 
@@ -195,11 +295,19 @@ public class AnalysePropertyData implements Serializable{
 		StructField[] aFieldList={PID,PName,PDes};
 		StructType schema=DataTypes.createStructType(aFieldList);
 		Dataset<Row> handleResult = this.session.createDataFrame(PropertyInfo, schema);
-		handleResult.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, JDBCUtil.PropertyInfoTable, JDBCUtil.GetWriteProperties());
+		if(writeFileOrDataBase==SparkConst.FileOrDatabase.File){
+			File outputFile=new File(argu);
+			if(outputFile.exists()){
+				outputFile.delete();
+			}
+			handleResult.write().text(argu);
+		}else{
+			handleResult.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, argu, JDBCUtil.GetWriteProperties(argu));
+		}
 	}
 	
 	public void propertyInfoAnalyse(){
-		this.propertyInfoAnalyse(this.readDataFromDatabase(JDBCUtil.PropertyItem));
+		//this.propertyInfoAnalyse(this.readDataFromDatabase(JDBCUtil.PropertyItem));
 	}
 	
 	public void propertyAliasAnalyse(Dataset<Row> originDataFromDatabase){
@@ -242,7 +350,7 @@ public class AnalysePropertyData implements Serializable{
 	}
 	
 	public void propertyAliasAnalyse(){
-		this.propertyAliasAnalyse(this.readDataFromDatabase(JDBCUtil.PropertyItem));
+		//this.propertyAliasAnalyse(this.readDataFromDatabase(JDBCUtil.PropertyItem));
 	}
 	
 	public void propertyContainProAnalyse(Dataset<Row> originData){
@@ -316,7 +424,7 @@ public class AnalysePropertyData implements Serializable{
 	}
 	
 	public void propertyContainProAnalyse(){
-		this.propertyContainProAnalyse(this.readDataFromDatabase(JDBCUtil.PropertyItem));
+		//this.propertyContainProAnalyse(this.readDataFromDatabase(JDBCUtil.PropertyItem));
 	}
 	
 	private ValuePair analyseDataValue(String jsonStr,ValueType type){
@@ -431,6 +539,6 @@ public class AnalysePropertyData implements Serializable{
 	}
 	
 	public void propertyMainSnakAnalyse(){
-		this.propertyMainSnakAnalyse(this.readDataFromDatabase(JDBCUtil.PropertyItem),JDBCUtil.PropertyMainSnak);
+		//this.propertyMainSnakAnalyse(this.readDataFromDatabase(JDBCUtil.PropertyItem),JDBCUtil.PropertyMainSnak);
 	}
 }

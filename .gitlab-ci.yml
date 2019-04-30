@@ -14,13 +14,9 @@ build-maven:
     - systemctl start docker
   script:
     - name="shenhangke"
+    - rm -rf ${SHARED_DIR}/Builds/${name}
     - mkdir -p ${SHARED_DIR}/Builds/${name}
     - mkdir -p ${SHARED_DIR}/Builds/${name}/DataReposity
-    - mkdir -p ${SHARED_DIR}/Builds/${name}/Data
-    - rm -rf ${SHARED_DIR}/Builds/${name}/DataReposity/ItemTypeAnalyseInfo
-    - ls ./Data
-    - ls ./Data/realData/
-    - cp -r ./Data/realData/PropertyIndexInfo.txt ${SHARED_DIR}/Builds/${name}/Data/PropertyIndexInfo.txt
     - cp -r ./target/* ${SHARED_DIR}/Builds/${name}
   when: always
 
@@ -31,7 +27,7 @@ run_project:
   script:
     - name="shenhangke"
     - echo ${SHARED_DIR}
-    - ls ${SHARED_DIR}/Datasets/wikidata/wikidata-20181203-all
+    - ls ${SHARED_DIR}/Datasets/wikidata/wikidata-20150921-all
     - "${SPARK_DIR}/bin/spark-submit --class org.shk.DataAny.App --packages com.alibaba:fastjson:1.2.57,mysql:mysql-connector-java:8.0.15 ${SHARED_DIR}/Builds/${name}/DataAny-0.0.1-SNAPSHOT.jar"
   when: always
 
@@ -41,9 +37,7 @@ clean_project:
     - S4-B
   script: 
     - name="shenhangke"
-    - ls ${SHARED_DIR}/Builds/${name}/
-    - rm -rf ${SHARED_DIR}/Builds/${name}/Data
-    - ls ${SHARED_DIR}/Builds/${name}/
+    - ls ${SHARED_DIR}/Builds/${name}/DataReposity
     - echo "Builds cleaned!"
   when: always
 

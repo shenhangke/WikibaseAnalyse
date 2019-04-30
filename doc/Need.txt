@@ -4,3 +4,7 @@
 	3.给定一个实例，返回所有在一条称述中提到的所有实例(ID->PID->Mainsnak(where dataType==entity_item))
 	4.给定一个实例，返回所有其所属的属性称述（ID->PID->MainSnak）
 	5.QA system
+	
+	
+	如果直接使用实例的QID 后面的数字作为hash值进行分块，有可能会出现空缺，同时导致表很多
+	如何衡量两者之间的时间差值。

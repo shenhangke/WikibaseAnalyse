@@ -3,7 +3,7 @@ package org.shk.constValue;
 import java.util.Map;
 
 public class FileConstValue {
-	public static boolean Test=false; 
+	public static boolean Test=true; 
 	
 	public static final String SourceFileDir="E:\\KgData\\";
 	public static final String SourceFilePath=SourceFileDir+"latest-all.json";
@@ -19,7 +19,7 @@ public class FileConstValue {
 	public static final String PrefixSaveToFile="SaveToFile:";
 	
 	public static String ServerSourceDir="";
-	public static String ServerFileName="";
+	public static String ServerOriginFileName="";
 	public static String ServerTestFileName="";
 	public static String ServerInfoFile="";
 	public static String ServerFileUrlSourceDir="";
@@ -30,7 +30,11 @@ public class FileConstValue {
 	public static String ServerItemContainer_WritePath="";
 	public static String ServerItemTypeInfo_WritePath="";
 	
+	public static String ServerPropertyInfoWritePath="";
+	
 	public static String HandledItemInfoFileDir="E:\\KgData\\ItemInfo\\runtimeData\\runtimeData";
+	
+	public static String StrSeparator="****";
 	
 	
 	static{
@@ -44,16 +48,17 @@ public class FileConstValue {
 				throw new NullPointerException("ServerSourceDir is null");
 			}else{
 				ServerFileUrlSourceDir="file://"+ServerSourceDir;
-				ServerFileName=ServerFileUrlSourceDir+"/Datasets/wikidata/wikidata-20181203-all/wikidata-20181203-all.json";
+				ServerOriginFileName=ServerFileUrlSourceDir+"/Datasets/wikidata/wikidata-20150921-all/wikidata-20150921-all.json";
 				ServerTestFileName=ServerFileUrlSourceDir+"/Datasets/wikidata/wikidata-20181203-all/head_10.txt";
 				ServerInfoFile=ServerFileUrlSourceDir+"/Builds/shenhangke/runtimeData";
 				ServerPropertyDataFileReadPath=ServerFileUrlSourceDir+"/Builds/shenhangke/Data/PropertyIndexInfo.txt";
 				ServerItemAlias_WritePath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/ItemAliasInfo";
 				ServerItemContainer_WritePath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/ItemContainerInfo";
 				ServerItemTypeInfo_WritePath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/ItemTypeAnalyseInfo";
+				ServerPropertyInfoWritePath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/PropertyInfoFile";
 			}
 		}else{
-			ServerFileName=DivideFilePath;
+			ServerOriginFileName=DivideFilePath;
 			ServerPropertyDataFileReadPath="D:\\MyEclpse WorkSpace\\DataAny\\Data\\realData\\PropertyIndexInfo.txt";
 			ServerItemAlias_WritePath="E:\\KgData\\AnaData\\Alias";
 			ServerItemContainer_WritePath="E:\\KgData\\AnaData\\Container";

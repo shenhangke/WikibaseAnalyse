@@ -1,0 +1,1 @@
+D:\codeTools\Spark\spark-2.4.1-bin-hadoop2.7\bin\spark-submit --class org.shk.DataAny.App --packages com.alibaba:fastjson:1.2.57,mysql:mysql-connector-java:8.0.15 "D:\MyEclpse WorkSpace\DataAny\target\DataAny-0.0.1-SNAPSHOT.jar"
