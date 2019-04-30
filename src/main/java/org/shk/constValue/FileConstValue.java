@@ -3,7 +3,7 @@ package org.shk.constValue;
 import java.util.Map;
 
 public class FileConstValue {
-	public static boolean Test=true; 
+	public static boolean Test=false; 
 	
 	public static final String SourceFileDir="E:\\KgData\\";
 	public static final String SourceFilePath=SourceFileDir+"latest-all.json";
