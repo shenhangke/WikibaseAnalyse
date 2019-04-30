@@ -7,7 +7,7 @@ stages:
 build-maven:
   stage: build-maven
   tags:
-    - S4-B
+    - S4-D
   before_script:
     - yum -y install docker   
     - systemctl enable docker  
@@ -23,7 +23,7 @@ build-maven:
 run_project:
   stage: run
   tags: 
-    - S4-B
+    - S4-D
   script:
     - name="shenhangke"
     - echo ${SHARED_DIR}
@@ -34,7 +34,7 @@ run_project:
 clean_project:
   stage: clean
   tags:
-    - S4-B
+    - S4-D
   script: 
     - name="shenhangke"
     - ls ${SHARED_DIR}/Builds/${name}/DataReposity
