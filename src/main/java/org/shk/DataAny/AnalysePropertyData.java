@@ -154,12 +154,8 @@ public class AnalysePropertyData implements Serializable{
 			@Override
 			public boolean call(Item value) throws Exception {
 				if(value.type==Item.EntityType.Property){
-					if(value.entityId.trim().toUpperCase().contains("Q")){
-						//To confirm the entity is property type
-						return true;
-					}else{
-						return false;
-					}
+					//To confirm the entity is property type
+					return true;
 				}else{
 					return false;
 				}
