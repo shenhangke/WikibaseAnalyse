@@ -31,7 +31,7 @@ public class App
     {	
     	DataAnalyse originDataAna=new DataAnalyse(SparkConst.MainSession);
     	AnalysePropertyData analyser=new AnalysePropertyData(SparkConst.MainSession);
-    	Dataset<Item> originData=originDataAna.extractDataItem(FileConstValue.ServerOriginFileName);
+    	Dataset<Item> originData=analyser.readPropertyDataFromFile(FileConstValue.ServerOriginFileName);
     	analyser.infoAnalyse(originData, FileOrDatabase.File, FileConstValue.ServerPropertyInfoWritePath);
     }
 }
