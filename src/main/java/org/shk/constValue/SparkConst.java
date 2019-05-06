@@ -8,7 +8,7 @@ public class SparkConst {
 		File,Database;
 	} 
 	
-	public static final SparkSession MainSession=SparkSession.builder().master("yarn").appName("shk_WikiAnalyse").
+	public static final SparkSession MainSession=SparkSession.builder().appName("shk_WikiAnalyse").
 			config("spark.executor.extraJavaOptions","-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps").getOrCreate();
 	
 	static{
