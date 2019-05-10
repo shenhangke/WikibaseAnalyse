@@ -11,11 +11,14 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
@@ -27,10 +30,14 @@ import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.storage.StorageLevel;
+import org.apache.spark.util.LongAccumulator;
 import org.shk.DataAny.AnalysePropertyData.DataType;
 import org.shk.JsonParse.Item;
 import org.shk.JsonParse.Item.Property.PropertyInfo;
 import org.shk.constValue.FileConstValue;
+import org.shk.constValue.SparkConst;
+import org.shk.util.MaxAccumulator;
+import org.shk.util.MinAccumulator;
 
 import DatabaseUtil.JDBCUtil;
 import DatabaseUtil.PropertyDatabaseUtil;
@@ -42,155 +49,52 @@ public class AnalyseItemData implements Serializable{
 	private static final long serialVersionUID = 1L;
 	private SparkSession session=null; 
 	
+	public static class CountInfo implements Serializable{
+		private static final long serialVersionUID = 1L;
+		private long maxIdValue=0;
+		private long maxItemCount=0;
+		private long minIdValue=0;
+		private long maxNameLength=0;
+		
+		public void setMaxIdValue(long value){
+			this.maxIdValue=value;
+		}
+		
+		public void setMaxItemCount(long value){
+			this.maxItemCount=value;
+		}
+		
+		public long getMaxIdValue(){
+			return this.maxIdValue;
+		}
+		
+		public long getMaxItemCount(){
+			return this.maxItemCount;
+		}
+		
+		public void setMinIdValue(long value){
+			this.minIdValue=value;
+		}
+		
+		public long getMinIdValue(){
+			return this.minIdValue;
+		}
+
+		public long getMaxNameLength() {
+			return maxNameLength;
+		}
+
+		public void setMaxNameLength(long maxNameLength) {
+			this.maxNameLength = maxNameLength;
+		}
+	} 
+	
 	public AnalyseItemData(SparkSession session) {
 		if(session!=null){
 			this.session=session;
 		}else{
 			throw new NullPointerException("the session is null");
 		}
-	}
-	
-	public Dataset<Item> filterItemLine(Dataset<Item> originData){
-		return originData.filter(new FilterFunction<Item>() {
-
-			public boolean call(Item item) throws Exception {
-				if(item.type==Item.EntityType.Item){
-					return true;
-				}else{
-					return false;
-				}
-			}
-		});
-	}
-	
-	private StructType getSparkWriteToFileSchema(){
-		StructField content=new StructField("content", DataTypes.StringType, true, Metadata.empty());
-		StructField[] contentList={content};
-		StructType schema=DataTypes.createStructType(contentList);
-		return schema;
-	}
-	
-	/**
-	 * 
-	 * Description 
-	 * @param originData it could comes from DataAnalyse.PreHandleData
-	 * @return
-	 * Return type: Dataset<Row>
-	 */
-	public Dataset<Row> itemInfoAnalyse(Dataset<Item> originData,String tableName){
-		//System.out.println("the store file path is: "+this.getStoreFilePath(tableName));
-		JavaRDD<Row> itemInfoRdd = originData.map(new MapFunction<Item,Row>(){
-
-			public Row call(Item item) throws Exception {
-				// TODO Auto-generated method stub
-				String entityID=item.entityId;
-				Item.LanItem aLabelItem=item.labels.get("en");
-				if(aLabelItem==null){
-					for(Entry<String,Item.LanItem> aLineLanItem:item.labels.entrySet()){
-						aLabelItem=aLineLanItem.getValue();
-						break;
-					}
-				}
-				String pName=null;
-				if(aLabelItem!=null){
-					pName=aLabelItem.value;
-				}
-				Item.LanItem aDes=item.descriptions.get("en");
-				if(aDes==null){
-					for(Entry<String,Item.LanItem> aLineLanItem:item.descriptions.entrySet()){
-						aDes=aLineLanItem.getValue();
-						break;
-					}
-				}
-				String pDescription=null;
-				if(aDes!=null){
-					pDescription=aDes.value;
-				}
-				return RowFactory.create(entityID,pName,pDescription);
-			}
-			
-		}, Encoders.bean(Row.class)).javaRDD();
-		StructField pIDField=new StructField("PID", DataTypes.StringType, true, Metadata.empty());
-		StructField pNameField=new StructField("PName", DataTypes.StringType, true, Metadata.empty());
-		StructField pDescriptionField=new StructField("PDescription", DataTypes.StringType, true, Metadata.empty());
-		StructField[] fieldList={pIDField,pNameField,pDescriptionField};
-		StructType schema=DataTypes.createStructType(fieldList);
-		Dataset<Row> infoData = this.session.createDataFrame(itemInfoRdd, schema);
-		if(this.isWriteToFile(tableName)){
-			//infoData.javaRDD().saveAsTextFile(this.getStoreFilePath(tableName));
-			JavaRDD<Row> witeToFileRdd = infoData.map(new MapFunction<Row,Row>(){
-
-				@Override
-				public Row call(Row row) throws Exception {
-					String multiToSingle="";
-					for(int i=0;i<row.size();i++){
-						if(i==row.size()-1){
-							multiToSingle=multiToSingle+row.getString(i);
-						}else{
-							multiToSingle=multiToSingle+row.getString(i)+"&&&&";
-						}
-					}
-					return RowFactory.create(multiToSingle);
-				}
-				
-			},Encoders.bean(Row.class)).javaRDD();
-			this.session.createDataFrame(witeToFileRdd, this.getSparkWriteToFileSchema()).write().mode(SaveMode.Overwrite).text(this.getStoreFilePath(tableName));
-		}else{
-			infoData.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
-		}
-		return infoData;
-	}
-	
-	public Dataset<Row> itemAliasAnalyse(Dataset<Item> originData,String tableName){
-		JavaRDD<Row> itemAliasRdd = originData.filter(new FilterFunction<Item>() {
-			
-			public boolean call(Item aLineItem) throws Exception {
-				if(aLineItem.aliases.get("en")==null){
-					return false;
-				}else{
-					return true;
-				}
-			}
-		}).flatMap(new FlatMapFunction<Item,Row>() {
-
-			public Iterator<Row> call(Item value) throws Exception {
-				String PID=value.entityId.trim();
-				ArrayList<Row> aAliasList=new ArrayList<Row>();
-				Item.LanAliaseItem aAliasItem=value.aliases.get("en");
-				for(int i=0;i<aAliasItem.itemList.size();i++){
-					String tempAlias=aAliasItem.itemList.get(i).value.trim();
-					Row aTempLine = RowFactory.create(PID,tempAlias);
-					aAliasList.add(aTempLine);
-				}
-				return aAliasList.iterator();
-			}
-			
-		}, Encoders.bean(Row.class)).javaRDD();
-		StructField PIDField=new StructField("PID", DataTypes.StringType, true, Metadata.empty());
-		StructField AliasName=new StructField("PAlias", DataTypes.StringType, true, Metadata.empty());
-		StructField[] aFieldList={PIDField,AliasName};
-		StructType schema=DataTypes.createStructType(aFieldList);
-		Dataset<Row> result = this.session.createDataFrame(itemAliasRdd, schema);
-		if(this.isWriteToFile(tableName)){
-			result.map(new MapFunction<Row,String>(){
-
-				@Override
-				public String call(Row row) throws Exception {
-					String sum="";
-					for(int i=0;i<row.size();i++){
-						sum+=row.getString(i);
-						if(i!=row.size()-1){
-							sum+="&&&&";
-						}
-					}
-					return sum;
-				}
-				
-			},Encoders.STRING()).write().mode(SaveMode.Overwrite).text(this.getStoreFilePath(tableName));
-		}else{
-			result.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
-		}
-		return result;
 	}
 	
 	public static void createItemContainerTable(String tableName) throws SQLException{
@@ -220,193 +124,163 @@ public class AnalyseItemData implements Serializable{
 		}
 	}
 	
-	private boolean isWriteToFile(String url){
-		return url.contains(FileConstValue.PrefixSaveToFile);
-	}
-	
-	private String getStoreFilePath(String url){
-		System.out.println("the url is: "+url);
-		String[] aStrList=url.split(":");
-		if(aStrList.length==3){
-			System.out.println("the length is 2");
-			return aStrList[1]+":"+aStrList[2];
-		}else{
-			System.out.println("the str length is : "+aStrList.length);
-			return null;
-		}
-	}
-	
-	public Dataset<Row> itemContainerAnalyse(Dataset<Item> originData,String tableName){
-		JavaRDD<Row> containRDD = originData.map(new MapFunction<Item,Row>() {
 
-			public Row call(Item originItem) throws Exception {
-				long[] aIniArr=new long[AnalysePropertyData.ContainerColCount];
-				for(int i=0;i<AnalysePropertyData.ContainerColCount;i++){
-					aIniArr[i]=0x0000000000000000L;
+	
+	public Dataset<Item> getItemDataItem(Dataset<Item> originData){
+		//there is no need to trigger the calculate
+		return originData.filter(new FilterFunction<Item>() {
+
+			@Override
+			public boolean call(Item value) throws Exception {
+				if(value.type==Item.EntityType.Item){
+					return true;
+				}else{
+					return false;
 				}
-				for(Entry<String,Item.Property> entry:originItem.claims.entrySet()){
-					//System.out.println("the property key is: "+entry.getKey());
-					int propertyIndex=PropertyDatabaseUtil.GetPropertyIndex(entry.getKey(),true);
-					//System.out.println("the propertyIndex is: "+propertyIndex);
-					//System.out.println("the property ID is: "+propertyIndex);
-					if(propertyIndex==-1){
-						//System.out.println("get property index error");
-						continue;
-					}else{
-						int segment=(propertyIndex%64)==0?(propertyIndex/64-1):(propertyIndex/64);
-						//System.out.println("the segment is: "+segment);
-						int index=(propertyIndex%64)==0?64:(propertyIndex%64);
-						//System.out.println("the index is: "+index);
-						aIniArr[segment]|=AnalysePropertyData.CodeArr[index-1];
-						//System.out.println("the aIniArr is: "+Long.toBinaryString(aIniArr[segment]));
-					}
-				}
-				
-				//System.out.println(Long.toHexString(aIniArr[35]));
-				Long[] containerLongArr=new Long[AnalysePropertyData.ContainerColCount];
-				for(int i=0;i<AnalysePropertyData.ContainerColCount;i++){
-					containerLongArr[i]=new Long(aIniArr[i]);
-				}
-				int iniArrLength=aIniArr.length;  //94
-				Object[] aReusltRowArr=new Object[1+AnalysePropertyData.ContainerColCount];
-				aReusltRowArr[0]=originItem.entityId;
-				System.arraycopy(containerLongArr, 0, aReusltRowArr, 1, iniArrLength);
-				return RowFactory.create(aReusltRowArr);
 			}
-		}, Encoders.bean(Row.class)).javaRDD();
-		
-		ArrayList<StructField> aFieldList=new ArrayList<StructField>();
-		StructField PID=new StructField("PID", DataTypes.StringType, true, Metadata.empty());
-		aFieldList.add(PID);
-		for(int i=0;i<AnalysePropertyData.ContainerColCount;i++){
-			StructField aTempCol=new StructField("Col_"+i, DataTypes.LongType, true, Metadata.empty());
-			aFieldList.add(aTempCol);
-		}
-		StructType schema = DataTypes.createStructType(aFieldList);
-		Dataset<Row> containerResult = this.session.createDataFrame(containRDD, schema);
-		containerResult.show();
-		if(this.isWriteToFile(tableName)){
-			System.out.println("handle file");
-			File aFile=new File(this.getStoreFilePath(tableName));
-			if(aFile.exists()){
-				aFile.delete();
-			}
-			containRDD.saveAsTextFile(this.getStoreFilePath(tableName));
-		}else{
-			containerResult.write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, 
-					JDBCUtil.GetWriteProperties(tableName));
-		}
-		return containerResult;
+			
+		});
 	}
 	
 	/**
 	 * 
-	 * Description check the dataType of item 
+	 * Description  Get the max Id count and the item count 
 	 * @param originData
-	 * Return type: void
+	 * @return
+	 * Return type: CountInfo
 	 */
-	public void AnalyseTypeInfo(Dataset<Item> originData,String dataTypeTableName){
-		JavaRDD<Row> dateTypeRdd = originData.flatMap(new FlatMapFunction<Item,String>() {
-
+	public CountInfo getMaxIdNum(Dataset<Item> originData){
+		final MaxAccumulator maxIdNumAcc=new MaxAccumulator();
+		JavaSparkContext tempContext=new JavaSparkContext(SparkConst.MainSession.sparkContext());
+		tempContext.sc().register(maxIdNumAcc, "maxIdNumAcc");
+		final LongAccumulator countAcc=new LongAccumulator();
+		tempContext.sc().register(countAcc,"countAcc");
+		final MinAccumulator minIdNumAcc=new MinAccumulator();
+		tempContext.sc().register(minIdNumAcc,"minIdNumAcc");
+		final MaxAccumulator maxNameLength=new MaxAccumulator();
+		tempContext.sc().register(maxNameLength,"maxNameLength");
+		originData.foreach(new ForeachFunction<Item>() {
+			
 			@Override
-			public Iterator<String> call(Item item) throws Exception {
-				ArrayList<String> aRowList=new ArrayList<String>();
-				for(Entry<String,Item.Property> entry:item.claims.entrySet()){
-					ArrayList<PropertyInfo> propertyInfoList = entry.getValue().propertyInfos;
-					if(propertyInfoList!=null){
-						for(int i=0;i<propertyInfoList.size();i++){
-							PropertyInfo propertyInfo = propertyInfoList.get(i);
-							if(propertyInfo.mainSnak!=null){
-								if((propertyInfo.mainSnak.dataType!=null)&&(!propertyInfo.mainSnak.dataType.equals(""))){
-									aRowList.add(propertyInfo.mainSnak.dataType);
-								}
+			public void call(Item value) throws Exception {
+				// TODO Auto-generated method stub
+				if(!value.entityId.isEmpty()){
+					if(value.entityId.toUpperCase().contains("Q")){
+						String entityIdNum=value.entityId.substring(1, value.entityId.length());
+						long entityIdNumInt=Long.parseLong(entityIdNum);
+						maxIdNumAcc.add(entityIdNumInt);
+						countAcc.add(1);
+						minIdNumAcc.add(entityIdNumInt);
+						/**
+						 * In order to get the maximum name length,we need to calculate.
+						 */
+						String name="";
+						if(value.labels.get("en")!=null){
+							name=value.labels.get("en").value;
+						}else{
+							//use the first label as entity's name
+							for(Entry<String,Item.LanItem> entry:value.labels.entrySet()){
+								name=entry.getValue().value;
+								break;
 							}
+						}
+						if(!name.trim().equals("")){
+							maxNameLength.add((long)name.length());
 						}
 					}
 				}
-				if(aRowList.size()>0){
-					return aRowList.iterator();
-				}else{
-					//System.out.println("map to String error,the return is null");
-					aRowList.add("null");
-					return aRowList.iterator();
-				}
-			}
-		}, Encoders.STRING()).javaRDD().mapToPair(new PairFunction<String, String, String>() {
-			@Override
-			public Tuple2<String, String> call(String value) throws Exception {
-				// TODO Auto-generated method stub
-				if(value==null){
-					System.out.println("the map to pair error,the value is null");
-				}
-				return new Tuple2<String, String>(value, value);
-			}
-		}).groupByKey().map(new Function<Tuple2<String,Iterable<String>>, Row>() {
-			@Override
-			public Row call(Tuple2<String, Iterable<String>> value) throws Exception {
-				// TODO Auto-generated method stub
-				if(value._1==null){
-					System.out.println("the value._1 is null");
-				}
-				Byte type=new Byte((byte)0);
-				return RowFactory.create(value._1,type);
 			}
 		});
-		
-		StructField type=new StructField("Type", DataTypes.StringType, true, Metadata.empty());
-		StructField dataType=new StructField("DataType", DataTypes.ByteType, true, Metadata.empty());
-		StructField[] fieldList={type,dataType};
-		StructType schema=DataTypes.createStructType(fieldList);
-		
-		JavaRDD<Row> typeRdd = originData.flatMap(new FlatMapFunction<Item,String>() {
+		CountInfo returnValue=new CountInfo();
+		returnValue.setMaxIdValue(maxIdNumAcc.value());
+		returnValue.setMaxItemCount(countAcc.value());
+		return returnValue;
+		//return maxIdNumAcc.value();
+	}
+	
+	/**
+	 * 
+	 * Description
+	 * @param originItemData
+	 * @param filePath the path which store the result,if this parament is "" or null,this function will not store any result
+	 * @return
+	 * Return type: Dataset<Row>
+	 */
+	public Dataset<Row> getItemInfo(Dataset<Item> originItemData,String filePath){
+		//the countInfo has the real value,beacause the getMaxIdNum has trigger the calculate
+		CountInfo countInfo = this.getMaxIdNum(originItemData);  //there has executed the action
+		System.out.println("the maxIdNum is: "+countInfo.maxIdValue); //the id 
+		System.out.println("the maxItemCount is: "+countInfo.maxItemCount);
+		System.out.println("the minIdNum is: "+countInfo.minIdValue);
+		System.out.println("the maxNameLength is: "+countInfo.maxNameLength);
+		//calculate the ratio
+		/**
+		 * I need to map the all of item id to the block which start 0 to itemCount
+		 * the format is: norY=a+k(Y-Min)
+		 */
+		double ratio=(double)((countInfo.maxItemCount)/(countInfo.maxIdValue-countInfo.minIdValue));
+		JavaSparkContext tempContext=new JavaSparkContext(SparkConst.MainSession.sparkContext());
+		//broadcast this ratio
+		final Broadcast<Double> ratioBroadcast=tempContext.broadcast(ratio);
+		final Broadcast<Long> minIdValue=tempContext.broadcast(countInfo.minIdValue);
+		//handle the data
+		Dataset<Row> itemInfoOrigin = originItemData.map(new MapFunction<Item,Row>(){
 
 			@Override
-			public Iterator<String> call(Item item) throws Exception {
-				ArrayList<String> aRowList=new ArrayList<String>();
-				for(Entry<String,Item.Property> entry:item.claims.entrySet()){
-					ArrayList<PropertyInfo> propertyInfoList = entry.getValue().propertyInfos;
-					if(propertyInfoList!=null){
-						for(int i=0;i<propertyInfoList.size();i++){
-							PropertyInfo propertyInfo = propertyInfoList.get(i);
-							if(propertyInfo.mainSnak!=null){
-								if((propertyInfo.mainSnak.dataValue!=null)&&(propertyInfo.mainSnak.dataValue.type!=null)&&(!propertyInfo.mainSnak.dataValue.type.equals(""))){
-									aRowList.add(propertyInfo.mainSnak.dataValue.type);
-								}
-							}
+			public Row call(Item value) throws Exception {
+				//calculate the index
+				Double execotorRatio=ratioBroadcast.value();
+				if(value.entityId.toUpperCase().contains("Q")){
+					String idNum=value.entityId.substring(1,value.entityId.length());
+					long idNumLong=Long.parseLong(idNum);
+					//the index
+					long index=(long)(ratioBroadcast.value()*((double)(idNumLong-minIdValue.value())));  //it need to be verify
+					//String indexStr=String.valueOf(index);
+					//the id
+					String entityId=value.entityId;
+					//the name
+					String name="";
+					if(value.labels.get("en")!=null){
+						name=value.labels.get("en").value;
+					}else{
+						for(Entry<String,Item.LanItem> entry:value.labels.entrySet()){
+							name=entry.getValue().value;
+							break;
 						}
 					}
-				}
-				if(aRowList.size()>0){
-					return aRowList.iterator();
+					//description
+					String description="";
+					if(value.descriptions.get("en")!=null){
+						description=value.descriptions.get("en").value;
+					}else{
+						for(Entry<String,Item.LanItem> entry:value.descriptions.entrySet()){
+							description=entry.getValue().value;
+							break;
+						}
+					}
+					return RowFactory.create(index,entityId,name,description);
 				}else{
-					aRowList.add("null");
-					return aRowList.iterator();
+					return null;
 				}
+				
 			}
-		}, Encoders.STRING()).javaRDD().mapToPair(new PairFunction<String, String, String>() {
-			@Override
-			public Tuple2<String, String> call(String value) throws Exception {
-				// TODO Auto-generated method stub
-				return new Tuple2<String, String>(value, value);
-			}
-		}).groupByKey().map(new Function<Tuple2<String,Iterable<String>>, Row>() {
-			@Override
-			public Row call(Tuple2<String, Iterable<String>> value) throws Exception {
-				// TODO Auto-generated method stub
-				Byte type=new Byte((byte)1);
-				return RowFactory.create(value._1,type);
-			}
-		});
-		if(this.isWriteToFile(dataTypeTableName)){
-			File aTempFile=new File(this.getStoreFilePath(dataTypeTableName));
-			if(aTempFile.exists()){
-				aTempFile.delete();
-			}
-			typeRdd.union(dateTypeRdd).saveAsTextFile(this.getStoreFilePath(dataTypeTableName));
-		}else{
-			this.session.createDataFrame(dateTypeRdd, schema).write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, dataTypeTableName, JDBCUtil.GetWriteProperties(dataTypeTableName));
-			this.session.createDataFrame(typeRdd, schema).write().mode(SaveMode.Append).jdbc(JDBCUtil.DB_URL, dataTypeTableName, JDBCUtil.GetWriteProperties(dataTypeTableName));
+			
+		}, Encoders.bean(Row.class));
+		File storeFile=new File(filePath);
+		if(storeFile.exists()){
+			storeFile.delete();
 		}
+		StructField qIndex=new StructField("QIndex", DataTypes.LongType, false, Metadata.empty());
+		StructField qId=new StructField("QId", DataTypes.StringType, false, Metadata.empty());
+		StructField name=new StructField("Name", DataTypes.StringType, false, Metadata.empty());
+		StructField description=new StructField("Description", DataTypes.StringType, false, Metadata.empty());
+		StructField[] fieldList={qIndex,qId,name,description};
+		StructType schema=DataTypes.createStructType(fieldList);
+		Dataset<Row> itemInfoResult=SparkConst.MainSession.createDataFrame(itemInfoOrigin.javaRDD(), schema);
+		if(!filePath.isEmpty()){
+			itemInfoResult.write().mode(SaveMode.Overwrite).csv(filePath);
+		}
+		return itemInfoResult;
 	}
 	
 }

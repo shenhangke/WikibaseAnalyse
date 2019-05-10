@@ -10,6 +10,8 @@ D:\MyEclpse WorkSpace\DataAny\src\main\java\org\shk\DataAny\App.java
 D:\MyEclpse WorkSpace\DataAny\src\main\java\DatabaseUtil\ItemDataBaseUtil.java
 D:\MyEclpse WorkSpace\DataAny\src\main\java\org\shk\constValue\FileConstValue.java
 D:\MyEclpse WorkSpace\DataAny\src\main\java\org\shk\DataAny\DataAnalyse.java
+D:\MyEclpse WorkSpace\DataAny\src\main\java\org\shk\util\MaxAccumulator.java
 D:\MyEclpse WorkSpace\DataAny\src\main\java\org\shk\JsonParse\ParseItem.java
 D:\MyEclpse WorkSpace\DataAny\src\main\java\org\shk\JsonParse\Item.java
 D:\MyEclpse WorkSpace\DataAny\src\main\java\org\shk\JsonParse\ParsePropertyDataValue.java
+D:\MyEclpse WorkSpace\DataAny\src\main\java\org\shk\util\MinAccumulator.java

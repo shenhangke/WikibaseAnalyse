@@ -1,5 +1,6 @@
 package org.shk.test;
 
+import java.util.List;
 import java.util.ArrayList;
 
 import org.apache.spark.api.java.JavaRDD;
@@ -19,14 +20,46 @@ import org.spark_project.dmg.pmml.DataType;
 
 
 public class TestExeOrder {
-	public static String TestFilePath="D:\\MyEclpse WorkSpace\\DataProject_Data\\PropertyInfoFile";
+	public static String TestFilePath="D:\\MyEclpse WorkSpace\\DataProject_Data\\PropertyInfoFile\\PropertyInfoFile";
 	
 	public static void main(String[] args) {
-		TestReadDirFile();
+		TestSaveDatasetToCsv("D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\testCsv");
 	}
 	
 	public static void TestReadDirFile(){
 		Dataset<String> originData = SparkConst.MainSession.read().textFile(TestFilePath);
 		originData.show();
 	}
+	
+	public static int GetPropertyCount(){
+		Dataset<String> originData=SparkConst.MainSession.read().textFile(TestFilePath);
+		List<String> originList=originData.collectAsList();
+		return originList.size();
+	}
+	
+	public static void TestSaveDatasetToCsv(String savePath){
+		JavaSparkContext tempContext=new JavaSparkContext(SparkConst.MainSession.sparkContext());
+		ArrayList<String> serList=new ArrayList<String>();
+		for(int i=0;i<1000;i++){
+			String tempStr=i+"_test&"+i;
+			serList.add(tempStr);
+		}
+		JavaRDD<String> listParResult = tempContext.parallelize(serList);
+		JavaRDD<Row> rowRdd = listParResult.map(new Function<String,Row>(){
+
+			@Override
+			public Row call(String value) throws Exception {
+				// TODO Auto-generated method stub
+				String[] splitArr = value.split("_");
+				return RowFactory.create(splitArr);
+			}
+			
+		});
+		StructField index=new StructField("index", DataTypes.StringType, true, Metadata.empty());
+		StructField value=new StructField("value", DataTypes.StringType, true, Metadata.empty());
+		StructField[] fieldList={index,value};
+		StructType schema=DataTypes.createStructType(fieldList);
+		SparkConst.MainSession.createDataFrame(rowRdd, schema).show();/*.write().mode(SaveMode.Overwrite).csv(savePath);*/
+	}
 }
+

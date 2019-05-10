@@ -18,6 +18,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.AnalysisException;
@@ -31,6 +32,8 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+import org.apache.spark.util.AccumulatorV2;
+import org.apache.spark.util.LongAccumulator;
 import org.shk.DataAny.App;
 import org.shk.JsonParse.Item;
 import org.shk.JsonParse.Item.Property;
@@ -38,6 +41,7 @@ import org.shk.JsonParse.Item.Property.PropertyInfo;
 import org.shk.JsonParse.ParseItem;
 import org.shk.constValue.FileConstValue;
 import org.shk.constValue.SparkConst;
+import org.shk.util.MaxAccumulator;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -45,7 +49,7 @@ public class PropertyDatabaseUtil {
 	private static final String GetLineFromDatabaseStatement="select Item from "+JDBCUtil.PropertyItem+" where PID=?;";
 	public static Broadcast<HashMap<String, Integer>> BroadcastIndex=null;
 	
-	static{
+	/*static{
 		Dataset<String> inputPropertyInfo=SparkConst.MainSession.read().textFile(FileConstValue.ServerPropertyDataFileReadPath);
 		JavaRDD<Row> handledRdd = inputPropertyInfo.map(new MapFunction<String,Row>(){
 
@@ -84,7 +88,7 @@ public class PropertyDatabaseUtil {
 		}catch(Exception e){
 			System.out.println("init propertyUtil error,the error message is: "+e.getMessage());
 		}
-	}
+	}*/
 	
 	public static void WriteOneLineItemTOFile(String fileName,String pID) throws SQLException{
 		Connection connection=null;
@@ -349,6 +353,102 @@ public class PropertyDatabaseUtil {
 		StructField pId=new StructField("PID", DataTypes.StringType, true, Metadata.empty());
 		StructField[] fieldList={index,pId};
 		StructType schema=DataTypes.createStructType(fieldList);*/
+	}
+	
+	public static Dataset<Row> GetPropertyNameMaxLength(String path){
+		JavaSparkContext tempJavaContext=new JavaSparkContext(SparkConst.MainSession.sparkContext());
+		final MaxAccumulator maxAcc=new MaxAccumulator();
+		tempJavaContext.sc().register(maxAcc, "maxAcc");
+		//tempJavaContext.sc().register(indexAcc,"indexAcc");
+		//MaxPropertyNameLength=tempJavaContext.broadcast(new Integer(0));
+		Dataset<String> originData=SparkConst.MainSession.read().textFile(path);
+		//List<String> originList = originData.collectAsList();
+		//System.out.println("the origin list size is: "+originList.size());
+		Dataset<String> specialCharToNormal = originData.map(new MapFunction<String,String>(){
+
+			@Override
+			public String call(String value) throws Exception {
+				String returnResult=value.replaceAll("\\*\\*\\*\\*",FileConstValue.StrSeparator);
+				//System.out.println("the return result is: "+returnResult);
+				return returnResult;
+			}
+			
+			
+		}, Encoders.STRING());
+		//List<String> normalList = specialCharToNormal.collectAsList();
+		//System.out.println("the normal list size is: "+normalList.size());
+		Dataset<String> filterDataset = specialCharToNormal.filter(new FilterFunction<String>() {
+			
+			@Override
+			public boolean call(String value) throws Exception {
+				String[] rowArr = value.split(FileConstValue.StrSeparator);
+				if(rowArr.length==3){
+					//System.out.println("the length is 3");
+					return true;
+				}else{
+					//System.out.println("filter has filte the item");
+					return false;
+				}
+			}
+		});
+		//List<String> filterResultList = filterDataset.collectAsList();
+		//System.out.println("the filter result list size is: "+filterResultList.size());
+		Dataset<Row> splitResultDataset = filterDataset.map(new MapFunction<String,Row>(){
+
+			@Override
+			public Row call(String value) throws Exception {
+				String[] rowArr=value.split(FileConstValue.StrSeparator);
+				//in case of exception,there need a judgment.
+				if(rowArr.length==3){
+					//String index=String.valueOf(indexBroadcast.value());
+					//indexBroadcast.
+					System.out.println("the name is: "+rowArr[0]);
+					System.out.println("the name length is: "+rowArr[0].length());
+					System.out.println("the acc value is: "+maxAcc.value());
+					if(rowArr[0].length()>maxAcc.value()){
+						maxAcc.add((long)rowArr[0].length());
+					}
+					return RowFactory.create(rowArr);
+				}else{
+					return null;
+				}
+			}
+			
+		}, Encoders.bean(Row.class)); 
+		System.out.println("the split result count is: "+splitResultDataset.count());
+		//List<Row> splitReusltList = splitResultDataset.collectAsList();
+		//System.out.println("the split list size is:"+splitReusltList.size());
+		System.out.println(maxAcc.value());
+		JavaRDD<Row> handledInfoRdd=splitResultDataset.javaRDD();
+		StructField ID=new StructField("ID",DataTypes.StringType, false, Metadata.empty());
+		StructField name=new StructField("name",DataTypes.StringType, false, Metadata.empty());
+		StructField description=new StructField("description",DataTypes.StringType, false, Metadata.empty());
+		StructField[] fieldList={ID,name,description};
+		StructType schema=DataTypes.createStructType(fieldList);
+		return SparkConst.MainSession.createDataFrame(handledInfoRdd, schema);
+		//return splitResultDataset;
+	}
+	
+	public static void WritePropertyInfoToDatabase(Dataset<Row> originData,String tableName){
+		StructField pIndex=new StructField("PIndex", DataTypes.ShortType, false, Metadata.empty());
+		StructField ID=new StructField("ID",DataTypes.StringType, false, Metadata.empty());
+		StructField name=new StructField("name",DataTypes.StringType, false, Metadata.empty());
+		StructField description=new StructField("description",DataTypes.StringType, false, Metadata.empty());
+		StructField[] fieldList={pIndex,ID,name,description};
+		List<Row> originList = originData.collectAsList();
+		List<Row> resultList=new ArrayList<Row>();
+		int index=0;
+		for(int i=0;i<originList.size();i++){
+			resultList.add(RowFactory.create((short)index,(String)originList.get(i).get(0),(String)originList.get(i).get(1),(String)originList.get(i).get(2)));
+			index++;
+		}
+		StructType schema=DataTypes.createStructType(fieldList);
+		SparkConst.MainSession.createDataFrame(resultList, schema).write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, 
+				tableName, JDBCUtil.GetWriteProperties(tableName));
+	}
+	
+	public static void main(String[] args) {
+		WritePropertyInfoToDatabase(GetPropertyNameMaxLength(FileConstValue.LocalPropertyInfoFileDir),JDBCUtil.PropertyInfoTable);
 	}
 	
 }

@@ -18,8 +18,8 @@ public class JDBCUtil {
 	/**
 	 * Database info
 	 */
-	static public final String DataBaseName="WikiBaseData";
-	static public final String PropertyInfoTable="PropertyInfo";
+	static public final String DataBaseName="wikibase";
+	static public final String PropertyInfoTable="propertyInfo";
 	static public final String PropertyItem="PropertyItem";
 	static public final String PropertryContainTable="PropertyContainer";
 	static public final String PropertyAlias="PropertyAlias";

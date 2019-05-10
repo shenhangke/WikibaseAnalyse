@@ -30,9 +30,9 @@ public class App
     public static void main( String[] args ) throws Exception
     {	
     	DataAnalyse originDataAna=new DataAnalyse(SparkConst.MainSession);
-    	AnalysePropertyData analyser=new AnalysePropertyData(SparkConst.MainSession);
-    	Dataset<Item> originData=analyser.readPropertyDataFromFile(FileConstValue.ServerOriginFileName);
-    	analyser.infoAnalyse(originData, FileOrDatabase.File, FileConstValue.ServerPropertyInfoWritePath);
+    	AnalyseItemData itemAna=new AnalyseItemData(SparkConst.MainSession);
+    	itemAna.getItemInfo(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)), 
+    			FileConstValue.ServerItemInfoPath);
     }
 }
 

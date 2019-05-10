@@ -34,7 +34,15 @@ public class FileConstValue {
 	
 	public static String HandledItemInfoFileDir="E:\\KgData\\ItemInfo\\runtimeData\\runtimeData";
 	
-	public static String StrSeparator="****";
+	public static String StrSeparator="&&&&";
+	
+	public static String LocalPropertyInfoFileDir="D:\\MyEclpse WorkSpace\\DataProject_Data\\PropertyInfoFile\\PropertyInfoFile\\";
+	
+	
+	/**
+	 * The path which is store item info relate to item 
+	 */
+	public static String ServerItemInfoPath="";
 	
 	
 	static{
@@ -45,7 +53,9 @@ public class FileConstValue {
 		if(!Test){
 			if(ServerSourceDir==null){
 				System.out.println("the ServerSourceDir is null");
-				throw new NullPointerException("ServerSourceDir is null");
+				if(!SparkConst.RunOnLocal){
+					throw new NullPointerException("ServerSourceDir is null");
+				}
 			}else{
 				ServerFileUrlSourceDir="file://"+ServerSourceDir;
 				ServerOriginFileName=ServerFileUrlSourceDir+"/Datasets/wikidata/wikidata-20150921-all/wikidata-20150921-all.json";
@@ -56,6 +66,7 @@ public class FileConstValue {
 				ServerItemContainer_WritePath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/ItemContainerInfo";
 				ServerItemTypeInfo_WritePath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/ItemTypeAnalyseInfo";
 				ServerPropertyInfoWritePath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/PropertyInfoFile";
+				ServerItemInfoPath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/ItemInfoFile";
 			}
 		}else{
 			ServerOriginFileName=DivideFilePath;

@@ -8,7 +8,7 @@ public class SparkConst {
 		File,Database;
 	} 
 	
-	public static final boolean RunOnLocal=true;
+	public static final boolean RunOnLocal=false;
 	
 	public static final SparkSession MainSession=SparkSession.builder().appName("shk_WikiAnalyse").getOrCreate();
 	
