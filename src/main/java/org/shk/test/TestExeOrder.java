@@ -15,6 +15,7 @@ import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.shk.constValue.SparkConst;
+import org.shk.util.EncodingDetect;
 import org.spark_project.dmg.pmml.DataType;
 
 
@@ -22,8 +23,10 @@ import org.spark_project.dmg.pmml.DataType;
 public class TestExeOrder {
 	public static String TestFilePath="D:\\MyEclpse WorkSpace\\DataProject_Data\\PropertyInfoFile\\PropertyInfoFile";
 	
-	public static void main(String[] args) {
-		TestSaveDatasetToCsv("D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\testCsv");
+	public static void main(String[] args) throws Exception {
+		//TestSaveDatasetToCsv("D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\testCsv");
+		//TestSparkCharSet();
+		System.out.println(EncodingDetect.codeString("D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\123_utf8.txt"));
 	}
 	
 	public static void TestReadDirFile(){
@@ -60,6 +63,11 @@ public class TestExeOrder {
 		StructField[] fieldList={index,value};
 		StructType schema=DataTypes.createStructType(fieldList);
 		SparkConst.MainSession.createDataFrame(rowRdd, schema).show();/*.write().mode(SaveMode.Overwrite).csv(savePath);*/
+	}
+	
+	public static void TestSparkCharSet(){
+		SparkConst.MainSession.read().text("D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\123_utf8.txt").show();
+		
 	}
 }
 

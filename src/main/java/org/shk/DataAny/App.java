@@ -24,15 +24,27 @@ import org.shk.constValue.FileConstValue;
 import org.shk.constValue.SparkConst;
 import org.shk.constValue.SparkConst.FileOrDatabase;
 import org.shk.getHardWareInfo.HardUtil;
+import org.shk.util.EncodingDetect;
+import org.apache.commons.io.FileUtils;
 
 public class App 
 {
     public static void main( String[] args ) throws Exception
     {	
-    	DataAnalyse originDataAna=new DataAnalyse(SparkConst.MainSession);
+    	//==========================================================================================//
+    	/**
+    	 * run code
+    	 */
+    	/*DataAnalyse originDataAna=new DataAnalyse(SparkConst.MainSession);
     	AnalyseItemData itemAna=new AnalyseItemData(SparkConst.MainSession);
     	itemAna.getItemInfo(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)), 
-    			FileConstValue.ServerItemInfoPath);
+    			FileConstValue.ServerItemInfoPath);*/
+    	//============================================================================================//
+    	
+    	//============================================================================================//
+    	//testcode
+    	System.out.println(EncodingDetect.codeString(FileConstValue.ServerOriginFileName));
+    	//============================================================================================//
     }
 }
 
