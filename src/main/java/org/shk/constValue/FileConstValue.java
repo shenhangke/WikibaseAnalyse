@@ -5,7 +5,7 @@ import java.util.Map;
 public class FileConstValue {
 	public static boolean Test=false; 
 	
-	public static final String SourceFileDir="E:\\KgData\\";
+	public static final String SourceFileDir="D:\\MyEclpse WorkSpace\\DataProject_Data\\";
 	public static final String SourceFilePath=SourceFileDir+"latest-all.json";
 	
 	public static final String TESTFILEPATH="E:\\KgData\\Test_Parse.json";
@@ -74,6 +74,7 @@ public class FileConstValue {
 			ServerItemAlias_WritePath="E:\\KgData\\AnaData\\Alias";
 			ServerItemContainer_WritePath="E:\\KgData\\AnaData\\Container";
 			ServerItemTypeInfo_WritePath="E:\\KgData\\AnaData\\TypeInfo";
+			ServerItemInfoPath=SourceFileDir+"ItemInfoFile";
 		}
 	}
 }

@@ -4,7 +4,7 @@ import org.apache.spark.util.AccumulatorV2;
 
 public class MinAccumulator extends AccumulatorV2<Long, Long>{
 	
-	private Long innerData=0l;
+	private Long innerData=Long.MAX_VALUE;
 
 	@Override
 	public void add(Long value) {
@@ -23,7 +23,7 @@ public class MinAccumulator extends AccumulatorV2<Long, Long>{
 
 	@Override
 	public boolean isZero() {
-		return this.innerData==0l;
+		return this.innerData==Long.MAX_VALUE;
 	}
 
 	@Override
@@ -35,7 +35,7 @@ public class MinAccumulator extends AccumulatorV2<Long, Long>{
 
 	@Override
 	public void reset() {
-		this.innerData=0l;
+		this.innerData=Long.MAX_VALUE;
 		
 	}
 

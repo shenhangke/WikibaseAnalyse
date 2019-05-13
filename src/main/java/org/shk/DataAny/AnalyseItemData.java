@@ -185,6 +185,8 @@ public class AnalyseItemData implements Serializable{
 							}
 						}
 						if(!name.trim().equals("")){
+							System.out.println("to get the max name length,the name is: "+name);
+							System.out.println("the max name length is: "+name.length());
 							maxNameLength.add((long)name.length());
 						}
 					}
@@ -194,6 +196,8 @@ public class AnalyseItemData implements Serializable{
 		CountInfo returnValue=new CountInfo();
 		returnValue.setMaxIdValue(maxIdNumAcc.value());
 		returnValue.setMaxItemCount(countAcc.value());
+		returnValue.setMaxNameLength(maxNameLength.value());
+		returnValue.setMinIdValue(minIdNumAcc.value());
 		return returnValue;
 		//return maxIdNumAcc.value();
 	}
@@ -231,7 +235,9 @@ public class AnalyseItemData implements Serializable{
 				//calculate the index
 				Double execotorRatio=ratioBroadcast.value();
 				if(value.entityId.toUpperCase().contains("Q")){
+					//System.out.println("the entity id contain Q");
 					String idNum=value.entityId.substring(1,value.entityId.length());
+					//System.out.println("the idNum is: "+idNum);
 					long idNumLong=Long.parseLong(idNum);
 					//the index
 					long index=(long)(ratioBroadcast.value()*((double)(idNumLong-minIdValue.value())));  //it need to be verify
