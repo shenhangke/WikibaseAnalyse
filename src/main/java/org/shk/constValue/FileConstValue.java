@@ -57,7 +57,7 @@ public class FileConstValue {
 					throw new NullPointerException("ServerSourceDir is null");
 				}
 			}else{
-				ServerFileUrlSourceDir="file://"+ServerSourceDir;
+				ServerFileUrlSourceDir="file:////"+ServerSourceDir;
 				ServerOriginFileName=ServerFileUrlSourceDir+"/Datasets/wikidata/wikidata-20150921-all/wikidata-20150921-all.json";
 				ServerTestFileName=ServerFileUrlSourceDir+"/Datasets/wikidata/wikidata-20181203-all/head_10.txt";
 				ServerInfoFile=ServerFileUrlSourceDir+"/Builds/shenhangke/runtimeData";
