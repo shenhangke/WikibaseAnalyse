@@ -35,15 +35,15 @@ public class App
     	/**
     	 * run code
     	 */
-    	/*DataAnalyse originDataAna=new DataAnalyse(SparkConst.MainSession);
+    	DataAnalyse originDataAna=new DataAnalyse(SparkConst.MainSession);
     	AnalyseItemData itemAna=new AnalyseItemData(SparkConst.MainSession);
     	itemAna.getItemInfo(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)), 
-    			FileConstValue.ServerItemInfoPath);*/
+    			FileConstValue.ServerItemInfoPath);
     	//============================================================================================//
     	
     	//============================================================================================//
     	//testcode
-    	System.out.println(EncodingDetect.codeString(FileConstValue.ServerOriginFileName));
+    	//System.out.println(EncodingDetect.codeString(FileConstValue.ServerOriginFileName));
     	//============================================================================================//
     }
 }

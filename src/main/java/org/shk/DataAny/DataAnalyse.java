@@ -5,9 +5,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.api.java.function.ForeachFunction;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.api.java.function.ReduceFunction;
 import org.apache.spark.sql.Dataset;
@@ -32,6 +38,7 @@ import org.shk.constValue.SparkConst;
 import com.google.protobuf.NullValue;
 
 import DatabaseUtil.JDBCUtil;
+import scala.Tuple2;
 
 public class DataAnalyse implements Serializable{
 
@@ -56,7 +63,18 @@ public class DataAnalyse implements Serializable{
 	 * Return type: Dataset<Item>
 	 */
 	public Dataset<Item> extractDataItem(String filePath){
-		Dataset<String> originFileData=this.session.read().textFile(filePath);
+		//Dataset<String> originFileData=this.session.read().textFile(filePath);
+		//this.session.sparkContext().hadoopFile(filePath, TextInputFormat.class, LongWritable.class, Text.class, 1);
+		JavaSparkContext tempJavaContext=new JavaSparkContext(this.session.sparkContext());
+		JavaPairRDD<LongWritable, Text> hadoopFile = tempJavaContext.hadoopFile(filePath, TextInputFormat.class, LongWritable.class, Text.class,1);
+		JavaRDD<String> hadoopFileString = hadoopFile.map(new Function<Tuple2<LongWritable,Text>, String>() {
+
+			@Override
+			public String call(Tuple2<LongWritable, Text> value) throws Exception {
+				return new String(value._2.getBytes(),0,value._2.getLength(),"GBK");
+			}
+		});
+		Dataset<String> originFileData = SparkConst.MainSession.createDataset(hadoopFileString.rdd(), Encoders.STRING());
 		Dataset<Item> preHandledData=originFileData.filter(new FilterFunction<String>() {
 			/*
 			 * (non-Javadoc) delete the superfluous data
