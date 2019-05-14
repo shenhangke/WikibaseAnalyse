@@ -9,11 +9,11 @@ public class MaxAccumulator extends AccumulatorV2<Long,Long>{
 	@Override
 	public void add(Long value) {
 		//innerData=innerData+value;
-		System.out.println("value"+value);
-		System.out.println("innerData"+this.innerData);
+		//System.out.println("value"+value);
+		//System.out.println("innerData"+this.innerData);
 		if(value>=this.innerData){
 			this.innerData=value;
-			System.out.println("the innerData is: "+this.innerData.toString());
+			//System.out.println("the innerData is: "+this.innerData.toString());
 		}
 	}
 

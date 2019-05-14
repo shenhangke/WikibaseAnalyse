@@ -222,7 +222,9 @@ public class AnalyseItemData implements Serializable{
 		 * I need to map the all of item id to the block which start 0 to itemCount
 		 * the format is: norY=a+k(Y-Min)
 		 */
-		double ratio=(double)((countInfo.maxItemCount)/(countInfo.maxIdValue-countInfo.minIdValue));
+		//double ratio=(double)((countInfo.maxItemCount)/(countInfo.maxIdValue-countInfo.minIdValue));
+		double ratio=((double)countInfo.maxItemCount)/((double)(countInfo.maxIdValue-countInfo.minIdValue));
+		System.out.println("the ratio is : "+ratio);
 		JavaSparkContext tempContext=new JavaSparkContext(SparkConst.MainSession.sparkContext());
 		//broadcast this ratio
 		final Broadcast<Double> ratioBroadcast=tempContext.broadcast(ratio);
@@ -240,7 +242,7 @@ public class AnalyseItemData implements Serializable{
 					//System.out.println("the idNum is: "+idNum);
 					long idNumLong=Long.parseLong(idNum);
 					//the index
-					long index=(long)(ratioBroadcast.value()*((double)(idNumLong-minIdValue.value())));  //it need to be verify
+					long index=(long)((ratioBroadcast.value()*((double)(idNumLong-minIdValue.value()))));  //it need to be verify
 					//String indexStr=String.valueOf(index);
 					//the id
 					String entityId=value.entityId;

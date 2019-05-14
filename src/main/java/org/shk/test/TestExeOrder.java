@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SaveMode;
@@ -18,6 +20,8 @@ import org.shk.constValue.SparkConst;
 import org.shk.util.EncodingDetect;
 import org.spark_project.dmg.pmml.DataType;
 
+import DatabaseUtil.JDBCUtil;
+
 
 
 public class TestExeOrder {
@@ -26,7 +30,9 @@ public class TestExeOrder {
 	public static void main(String[] args) throws Exception {
 		//TestSaveDatasetToCsv("D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\testCsv");
 		//TestSparkCharSet();
-		System.out.println(EncodingDetect.codeString("D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\123_utf8.txt"));
+		//System.out.println(EncodingDetect.codeString("D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\123_utf8.txt"));
+		//TestSotreInDatabaseEncoding("D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\part-01351-4182331a-6b39-4788-a2f8-3f33968cd9a9-c000.csv","");
+		System.out.println((double)(18555611.0/20991701.0));
 	}
 	
 	public static void TestReadDirFile(){
@@ -67,7 +73,31 @@ public class TestExeOrder {
 	
 	public static void TestSparkCharSet(){
 		SparkConst.MainSession.read().text("D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\123_utf8.txt").show();
-		
+	}
+	
+	public static void TestSotreInDatabaseEncoding(String filePath,String tableName){
+		Dataset<Row> readFromCsvDataset = SparkConst.MainSession.read().csv(filePath);
+		readFromCsvDataset=readFromCsvDataset.withColumnRenamed("_c0", "QIndex");
+		readFromCsvDataset=readFromCsvDataset.withColumnRenamed("_c1", "ID");
+		readFromCsvDataset=readFromCsvDataset.withColumnRenamed("_c2", "Name");
+		readFromCsvDataset=readFromCsvDataset.withColumnRenamed("_c3", "Description");
+		JavaRDD<Row> testDatasetRdd = readFromCsvDataset.map(new MapFunction<Row,Row>(){
+
+			@Override
+			public Row call(Row value) throws Exception {
+				// TODO Auto-generated method stub
+				String IDStr=value.getString(1).substring(1,value.getString(1).length());
+				Integer ID=Integer.parseInt(IDStr);
+				return RowFactory.create(Integer.parseInt(value.getString(0)),ID,value.getString(2),value.getString(3));
+			}},Encoders.bean(Row.class)).javaRDD();
+		StructField QIndex=new StructField("QIndex", DataTypes.IntegerType, true, Metadata.empty());
+		StructField IDF=new StructField("ID", DataTypes.IntegerType, true, Metadata.empty());
+		StructField name=new StructField("Name", DataTypes.StringType, true, Metadata.empty());
+		StructField description=new StructField("Description", DataTypes.StringType, true, Metadata.empty());
+		StructField[] fieldList={QIndex,IDF,name,description};
+		StructType schema=DataTypes.createStructType(fieldList);
+		SparkConst.MainSession.createDataFrame(testDatasetRdd, schema).write().mode(SaveMode.Overwrite).jdbc(DatabaseUtil.JDBCUtil.DB_URL, JDBCUtil.ItemInfo, JDBCUtil.GetWriteProperties(JDBCUtil.ItemInfo));
+		//readFromCsvDataset.write().mode(SaveMode.Overwrite).jdbc(DatabaseUtil.JDBCUtil.DB_URL, JDBCUtil.ItemInfo, JDBCUtil.GetWriteProperties(JDBCUtil.ItemInfo));
 	}
 }
 
