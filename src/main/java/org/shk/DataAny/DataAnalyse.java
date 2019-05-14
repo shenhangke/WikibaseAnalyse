@@ -34,6 +34,7 @@ import org.shk.JsonParse.ParseItem;
 import org.shk.JsonParse.Item.EntityType;
 import org.shk.constValue.FileConstValue;
 import org.shk.constValue.SparkConst;
+import org.shk.util.EncodingDetect;
 
 import com.google.protobuf.NullValue;
 
@@ -63,7 +64,21 @@ public class DataAnalyse implements Serializable{
 	 * Return type: Dataset<Item>
 	 */
 	public Dataset<Item> extractDataItem(String filePath){
-		//Dataset<String> originFileData=this.session.read().textFile(filePath);
+		//TestCode encodeing
+		//============================================================================================//
+		/**
+		 * test the originData encode type
+		 */
+		Dataset<String> originFileDataStr=this.session.read().textFile(filePath);
+		originFileDataStr.filter(new FilterFunction<String>() {
+
+			@Override
+			public boolean call(String value) throws Exception {
+				System.out.println(EncodingDetect.getEncoding(value));
+				return false;
+			}
+		}).count();
+		//==============================================================================================//
 		//this.session.sparkContext().hadoopFile(filePath, TextInputFormat.class, LongWritable.class, Text.class, 1);
 		JavaSparkContext tempJavaContext=new JavaSparkContext(this.session.sparkContext());
 		JavaPairRDD<LongWritable, Text> hadoopFile = tempJavaContext.hadoopFile(filePath, TextInputFormat.class, LongWritable.class, Text.class,1);
@@ -71,7 +86,7 @@ public class DataAnalyse implements Serializable{
 
 			@Override
 			public String call(Tuple2<LongWritable, Text> value) throws Exception {
-				return new String(value._2.getBytes(),0,value._2.getLength(),"GBK");
+				return new String(value._2.getBytes(),0,value._2.getLength(),"UNICODE");
 			}
 		});
 		Dataset<String> originFileData = SparkConst.MainSession.createDataset(hadoopFileString.rdd(), Encoders.STRING());
