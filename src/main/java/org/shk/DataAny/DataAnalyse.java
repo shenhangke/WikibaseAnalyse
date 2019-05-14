@@ -86,7 +86,7 @@ public class DataAnalyse implements Serializable{
 
 			@Override
 			public String call(Tuple2<LongWritable, Text> value) throws Exception {
-				return new String(value._2.getBytes(),0,value._2.getLength(),"UNICODE");
+				return new String(value._2.getBytes(),0,value._2.getLength(),"UTF-8");
 			}
 		});
 		Dataset<String> originFileData = SparkConst.MainSession.createDataset(hadoopFileString.rdd(), Encoders.STRING());
