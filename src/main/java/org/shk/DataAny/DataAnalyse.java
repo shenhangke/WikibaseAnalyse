@@ -74,7 +74,7 @@ public class DataAnalyse implements Serializable{
 
 			@Override
 			public boolean call(String value) throws Exception {
-				System.out.println(EncodingDetect.getEncoding(value));
+				//System.out.println(EncodingDetect.getEncoding(value));
 				return false;
 			}
 		}).count();

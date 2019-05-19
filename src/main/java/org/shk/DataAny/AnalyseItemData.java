@@ -384,7 +384,7 @@ public class AnalyseItemData implements Serializable{
 				
 			}, Encoders.bean(Row.class)).javaRDD();
 			StructField[] fieldList=new StructField[28];
-			fieldList[0]=new StructField("ID", DataTypes.StringType, false, Metadata.empty());
+			fieldList[0]=new StructField("ID", DataTypes.IntegerType, false, Metadata.empty());
 			for(int i=1;i<28;i++){
 				fieldList[i]=new StructField("Col_"+i, DataTypes.LongType, false, Metadata.empty());
 			}

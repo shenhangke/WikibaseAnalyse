@@ -3,7 +3,7 @@ package org.shk.constValue;
 import java.util.Map;
 
 public class FileConstValue {
-	public static boolean Test=true; 
+	public static boolean Test=false; 
 	
 	public static final String SourceFileDir="D:\\MyEclpse WorkSpace\\DataProject_Data\\";
 	public static final String SourceFilePath=SourceFileDir+"latest-all.json";
@@ -76,9 +76,10 @@ public class FileConstValue {
 			ServerOriginFileName=DivideFilePath;
 			ServerPropertyDataFileReadPath="D:\\MyEclpse WorkSpace\\DataAny\\Data\\realData\\PropertyIndexInfo.txt";
 			ServerItemAlias_WritePath="E:\\KgData\\AnaData\\Alias";
-			ServerItemContainer_WritePath="E:\\KgData\\AnaData\\Container";
+			ServerItemContainer_WritePath="D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\ItemContainer";
 			ServerItemTypeInfo_WritePath="E:\\KgData\\AnaData\\TypeInfo";
 			ServerItemInfoPath=SourceFileDir+"ItemInfoFile";
+			ServerPropertyInfoFileDir="D:\\MyEclpse WorkSpace\\DataAny\\Data\\PropertyInfo\\Info";
 		}
 	}
 }
