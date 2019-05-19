@@ -337,7 +337,7 @@ public class AnalyseItemData implements Serializable{
 	 */
 	public Dataset<Row> getItemContainer(String propertyInfoFilePath,Dataset<Item> originData,String dirToStoreResult) throws Exception{
 		File propertyFile=new File(propertyInfoFilePath);
-		if(!propertyFile.exists()){
+		if(false){
 			System.out.println("the property file is not exists,getItemContainer exit with exception");
 			throw new Exception("the property file is not exists");
 		}else{
