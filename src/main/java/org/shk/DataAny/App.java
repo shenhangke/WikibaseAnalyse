@@ -37,8 +37,23 @@ public class App
     	 */
     	DataAnalyse originDataAna=new DataAnalyse(SparkConst.MainSession);
     	AnalyseItemData itemAna=new AnalyseItemData(SparkConst.MainSession);
-    	itemAna.getItemInfo(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)), 
-    			FileConstValue.ServerItemInfoPath);
+    	
+    	/**
+    	 * Analyzing the itemInfo
+    	 */
+    	/*itemAna.getItemInfo(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)), 
+    			FileConstValue.ServerItemInfoPath);*/
+    	
+    	/**
+    	 * Analyzing the containerInfo
+    	 */
+    	//Because the program which is storing the iteminfo to database,there need to generate a new propertyInfo file
+    	itemAna.getItemContainer(FileConstValue.ServerPropertyInfoFileDir, 
+    			itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)),
+    			FileConstValue.ServerItemContainer_WritePath);
+    	
+    	
+    	
     	//============================================================================================//
     	
     	//============================================================================================//

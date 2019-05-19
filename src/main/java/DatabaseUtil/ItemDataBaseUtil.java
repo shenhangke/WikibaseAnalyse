@@ -2,6 +2,9 @@ package DatabaseUtil;
 
 import java.io.File;
 import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -26,6 +29,8 @@ public class ItemDataBaseUtil implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	private SparkSession session=null;
+	
+	
 	
 	public ItemDataBaseUtil(SparkSession session) {
 		if(session==null){
@@ -88,9 +93,64 @@ public class ItemDataBaseUtil implements Serializable{
 		}
 	}
 	
-	/*public static void main(String[] args) {
-		ItemDataBaseUtil aItemUtil=new ItemDataBaseUtil(SparkConst.MainSession);
-		ArrayList<String> fileList = aItemUtil.getFileList(FileConstValue.HandledItemInfoFileDir);
-		aItemUtil.handleItemInfoFromFile(fileList);
-	}*/
+	public static void CreateItemContainerTable() throws SQLException{
+		Connection connection=null;
+		Statement statement=null;
+		try{
+			connection=JDBCUtil.GetConnection();
+			statement=connection.createStatement();
+			String argu="";
+			for(int i=0;i<27;i++){
+				argu+="Col_"+i+" BIGINT(64) signed,";
+			}
+			argu=argu.substring(0,argu.length()-1);
+			argu="ID INTEGER signed not null primary key,"+argu;
+			String dropExistsTable="drop table if exists "+JDBCUtil.ItemContainer;
+			String createTable="create table "+JDBCUtil.ItemContainer+" ("+argu+");";
+			System.out.println(createTable);
+			statement.execute(dropExistsTable);
+			statement.execute(createTable);
+		}finally{
+			if(connection!=null){
+				connection.close();
+			}
+			if(statement!=null){
+				statement.close();
+			}
+		}
+	}
+	
+	public static void ImportDataToDatabase(String dirPath,String tableName){
+		Dataset<Row> originData = SparkConst.MainSession.read().csv(dirPath);
+		JavaRDD<Row> handledDataRdd = originData.map(new MapFunction<Row,Row>(){
+
+			@Override
+			public Row call(Row value) throws Exception {
+				// TODO Auto-generated method stub
+				String idNumStr=value.getString(1).substring(1,value.getString(1).length());
+				Integer idNum=Integer.parseInt(idNumStr);
+				return RowFactory.create(Integer.parseInt(value.getString(0)),idNum,value.getString(2),value.getString(3));
+			}}, Encoders.bean(Row.class)).javaRDD();
+		StructField qIndex=new StructField("QIndex", DataTypes.IntegerType, false, Metadata.empty());
+		StructField id=new StructField("ID", DataTypes.IntegerType, false, Metadata.empty());
+		StructField name=new StructField("Name", DataTypes.StringType, true, Metadata.empty());
+		StructField description=new StructField("Description", DataTypes.StringType, true, Metadata.empty());
+		StructField[] fieldList={qIndex,id,name,description};
+		StructType schema=DataTypes.createStructType(fieldList);
+		SparkConst.MainSession.createDataFrame(handledDataRdd, schema).write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
+	}
+	
+	public static void main(String[] args) throws SQLException {
+		/**
+		 * Create the container table
+		 */
+		//CreateItemContainerTable();
+		
+		/**
+		 * Import data to itemInfo table
+		 */
+		System.out.println("import start...");
+		ImportDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemInfoFile\\ItemInfoFile",JDBCUtil.ItemInfo);
+		System.out.println("import finish");
+	}
 }

@@ -32,7 +32,8 @@ public class TestExeOrder {
 		//TestSparkCharSet();
 		//System.out.println(EncodingDetect.codeString("D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\123_utf8.txt"));
 		//TestSotreInDatabaseEncoding("D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\part-01351-4182331a-6b39-4788-a2f8-3f33968cd9a9-c000.csv","");
-		System.out.println((double)(18555611.0/20991701.0));
+		//System.out.println((double)(18555611.0/20991701.0));
+		System.out.println((int)(127/64));
 	}
 	
 	public static void TestReadDirFile(){

@@ -1,0 +1,76 @@
+object Form1: TForm1
+  Left = 0
+  Top = 0
+  Caption = 'Form1'
+  ClientHeight = 299
+  ClientWidth = 635
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  PixelsPerInch = 96
+  TextHeight = 13
+  object ConnectionMySql: TSQLConnection
+    DriverName = 'Oracle'
+    LoginPrompt = False
+    Params.Strings = (
+      'DriverUnit=Data.DBXOracle'
+      
+        'DriverPackageLoader=TDBXDynalinkDriverLoader,DBXCommonDriver220.' +
+        'bpl'
+      
+        'DriverAssemblyLoader=Borland.Data.TDBXDynalinkDriverLoader,Borla' +
+        'nd.Data.DbxCommonDriver,Version=22.0.0.0,Culture=neutral,PublicK' +
+        'eyToken=91d62ebb5b0d1b1b'
+      
+        'MetaDataPackageLoader=TDBXOracleMetaDataCommandFactory,DbxOracle' +
+        'Driver220.bpl'
+      
+        'MetaDataAssemblyLoader=Borland.Data.TDBXOracleMetaDataCommandFac' +
+        'tory,Borland.Data.DbxOracleDriver,Version=22.0.0.0,Culture=neutr' +
+        'al,PublicKeyToken=91d62ebb5b0d1b1b'
+      'GetDriverFunc=getSQLDriverORACLE'
+      'LibraryName=dbxora.dll'
+      'LibraryNameOsx=libsqlora.dylib'
+      'VendorLib=oci.dll'
+      'VendorLibWin64=oci.dll'
+      'VendorLibOsx=libociei.dylib'
+      'DataBase=Database Name'
+      'User_Name=user'
+      'Password=password'
+      'MaxBlobSize=-1'
+      'LocaleCode=0000'
+      'IsolationLevel=ReadCommitted'
+      'RowsetSize=20'
+      'OSAuthentication=False'
+      'MultipleTransactions=False'
+      'TrimChar=False'
+      'BlobSize=-1'
+      'ErrorResourceFile='
+      'OS Authentication=False'
+      'Multiple Transaction=False'
+      'Trim Char=False'
+      'Decimal Separator=.')
+    Left = 32
+    Top = 8
+  end
+  object SimDataSetMySql: TSimpleDataSet
+    Aggregates = <>
+    DataSet.MaxBlobSize = -1
+    DataSet.Params = <>
+    Params = <>
+    Left = 120
+    Top = 8
+  end
+  object DataSource: TDataSource
+    Left = 208
+    Top = 8
+  end
+  object con1: TADOConnection
+    Left = 136
+    Top = 112
+  end
+end

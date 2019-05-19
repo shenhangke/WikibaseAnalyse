@@ -218,7 +218,7 @@ public class AnalysePropertyData implements Serializable{
 			}
 			infoDataset.write().mode(SaveMode.Overwrite).text(argu);
 		}else{
-			//Store in DataBase where executor in local or remote server has mysql
+			//Store in DataBase if executor in local or remote server has mysql
 		}
 		
 		return infoDataset.map(new MapFunction<String,Row>(){

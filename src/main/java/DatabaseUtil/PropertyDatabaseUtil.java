@@ -447,8 +447,25 @@ public class PropertyDatabaseUtil {
 				tableName, JDBCUtil.GetWriteProperties(tableName));
 	}
 	
+	public static void GeneratePropertyInfo(String tableName,String storeFilePath){
+		Dataset<Row> databaseOriginData = SparkConst.MainSession.read().
+				jdbc(JDBCUtil.DB_URL, JDBCUtil.PropertyInfoTable, JDBCUtil.GetReadProperties(tableName));
+		databaseOriginData.write().mode(SaveMode.Overwrite).csv(storeFilePath);
+	}
+	
 	public static void main(String[] args) {
-		WritePropertyInfoToDatabase(GetPropertyNameMaxLength(FileConstValue.LocalPropertyInfoFileDir),JDBCUtil.PropertyInfoTable);
+		
+		/**
+		 * writeInfo to database
+		 */
+		//============================================================================================================
+		//WritePropertyInfoToDatabase(GetPropertyNameMaxLength(FileConstValue.LocalPropertyInfoFileDir),JDBCUtil.PropertyInfoTable);
+		//============================================================================================================
+		
+		/**
+		 * gennerate the propertyInfo file 
+		 */
+		GeneratePropertyInfo(JDBCUtil.PropertyInfoTable,FileConstValue.localPropertyInfoTableFIleDir);
 	}
 	
 }

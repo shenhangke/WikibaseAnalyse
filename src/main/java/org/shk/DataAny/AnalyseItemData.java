@@ -7,8 +7,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+
+import javax.swing.text.DefaultEditorKit.CutAction;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -88,6 +91,28 @@ public class AnalyseItemData implements Serializable{
 			this.maxNameLength = maxNameLength;
 		}
 	} 
+	
+	public static class ContainerBitInfo implements Serializable{
+
+		private static final long serialVersionUID = 1L;
+		
+		private int segment=0;
+		private Long num=0l;
+		
+		public int getSegment() {
+			return segment;
+		}
+		public void setSegment(int segment) {
+			this.segment = segment;
+		}
+		public Long getNum() {
+			return num;
+		}
+		public void setNum(Long num) {
+			this.num = num;
+		}
+		
+	}
 	
 	public AnalyseItemData(SparkSession session) {
 		if(session!=null){
@@ -290,5 +315,88 @@ public class AnalyseItemData implements Serializable{
 		}
 		return itemInfoResult;
 	}
+	
+	private ContainerBitInfo getSegmentNum(int index){
+		ContainerBitInfo containerInfo=new ContainerBitInfo();
+		//judge the current property belong to which col
+		containerInfo.segment=(int)(index/64);
+		long baseLong=0x0000000000000001;
+		baseLong=baseLong<<(index%64);
+		containerInfo.num=baseLong;
+		return containerInfo;
+	}
+	
+	/**
+	 * 
+	 * Description To get what item contain property,this function will calculator the container information 
+	 * @param propertyInfoFilePath the type of file which store the property info is csv 
+	 * @param originData
+	 * @return
+	 * @throws Exception
+	 * Return type: Dataset<Row>
+	 */
+	public Dataset<Row> getItemContainer(String propertyInfoFilePath,Dataset<Item> originData,String dirToStoreResult) throws Exception{
+		File propertyFile=new File(propertyInfoFilePath);
+		if(!propertyFile.exists()){
+			System.out.println("the property file is not exists,getItemContainer exit with exception");
+			throw new Exception("the property file is not exists");
+		}else{
+			Dataset<Row> propertyOriginData = SparkConst.MainSession.read().csv(propertyInfoFilePath);
+			//To store the propertyId and index
+			/**
+			 * this hashmap store the info like (Id,index)
+			 */
+			HashMap<String,Integer> propertyIndexInfoMap=new HashMap<String, Integer>();
+			List<Row> propertyOriginDataList = propertyOriginData.collectAsList();
+			for(int i=0;i<propertyOriginDataList.size();i++){
+				propertyIndexInfoMap.put(propertyOriginDataList.get(i).getString(1), Integer.parseInt(propertyOriginDataList.get(i).getString(0)));
+			}
+			//create a broadcast to broadcast the hashMap
+			JavaSparkContext tempJavaContext=new JavaSparkContext(SparkConst.MainSession.sparkContext());
+			//any executor could to get property index info from propertyIndexInfo
+			final Broadcast<HashMap<String,Integer>> propertyIndexInfo=tempJavaContext.broadcast(propertyIndexInfoMap);
+			JavaRDD<Row> containerInfoRdd = originData.map(new MapFunction<Item,Row>(){
+
+				@Override
+				public Row call(Item value) throws Exception {
+					long[] propertyContainerInfo=new long[27];
+					for(int i=0;i<propertyContainerInfo.length;i++){
+						propertyContainerInfo[i]=0x0000000000000000;
+					}
+					for(Entry<String,Item.Property> entry:value.claims.entrySet()){
+						if(propertyIndexInfo.value().get(entry.getKey())!=null){
+							Integer propertyIndex=propertyIndexInfo.value().get(entry.getKey());
+							ContainerBitInfo itemContainerNumInfo=AnalyseItemData.this.getSegmentNum(propertyIndex);
+							propertyContainerInfo[itemContainerNumInfo.segment]=
+									propertyContainerInfo[itemContainerNumInfo.segment]|itemContainerNumInfo.num;
+						}else{
+							continue;
+						}
+					}
+					Object[] rowResult=new Object[28];
+					Integer id=Integer.parseInt(value.entityId.substring(1, value.entityId.length()));
+					rowResult[0]=id;
+					for(int i=1;i<28;i++){
+						rowResult[i]=new Long(propertyContainerInfo[i-1]);
+					}
+					return RowFactory.create(rowResult);
+				}
+				
+			}, Encoders.bean(Row.class)).javaRDD();
+			StructField[] fieldList=new StructField[28];
+			fieldList[0]=new StructField("ID", DataTypes.StringType, false, Metadata.empty());
+			for(int i=1;i<28;i++){
+				fieldList[i]=new StructField("Col_"+i, DataTypes.LongType, false, Metadata.empty());
+			}
+			StructType schema=DataTypes.createStructType(fieldList);
+			Dataset<Row> containerInfo = SparkConst.MainSession.createDataFrame(containerInfoRdd, schema);
+			if(dirToStoreResult!=""){
+				containerInfo.write().mode(SaveMode.Overwrite).csv(dirToStoreResult);
+			}else{
+				containerInfo.count();
+			}
+			return containerInfo;
+		}
+	} 
 	
 }
