@@ -18,7 +18,7 @@ build-maven:
     - mkdir -p ${SHARED_DIR}/Builds/${name}
     - mkdir -p ${SHARED_DIR}/Builds/${name}/DataReposity
     - cp -r ./target/* ${SHARED_DIR}/Builds/${name}
-    - cp -r ./Data/PropertyInfo/* ${SHARED_DIR}/Builds/${name}/DataReposity/TempPropertyInfo/
+    - cp -r ./Data/PropertyInfo ${SHARED_DIR}/Builds/${name}/DataReposity/TempPropertyInfo/
   when: always
 
 run_project:
