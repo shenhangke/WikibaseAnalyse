@@ -120,7 +120,7 @@ public class ItemDataBaseUtil implements Serializable{
 		}
 	}
 	
-	public static void ImportDataToDatabase(String dirPath,String tableName){
+	public static void ImportInfoDataToDatabase(String dirPath,String tableName){
 		Dataset<Row> originData = SparkConst.MainSession.read().csv(dirPath);
 		JavaRDD<Row> handledDataRdd = originData.map(new MapFunction<Row,Row>(){
 
@@ -140,6 +140,32 @@ public class ItemDataBaseUtil implements Serializable{
 		SparkConst.MainSession.createDataFrame(handledDataRdd, schema).write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
 	}
 	
+	public static void ImpoertContainerDataToDatabase(String dirPath,String tableName){
+		Dataset<Row> originData=SparkConst.MainSession.read().csv(dirPath);
+		JavaRDD<Row> resultRdd = originData.map(new MapFunction<Row,Row>(){
+
+			@Override
+			public Row call(Row value) throws Exception {
+				// TODO Auto-generated method stub
+				Object[] rowList=new Object[28];
+				rowList[0]=(Integer)(new Integer(Integer.parseInt(value.getString(0))));
+				for(int i=1;i<28;i++){
+					rowList[i]=(Long)(new Long(Long.parseLong(value.getString(i))));
+				}
+				return RowFactory.create(rowList);
+			}
+			
+		}, Encoders.bean(Row.class)).javaRDD();
+		StructField[] fieldList=new StructField[28];
+		fieldList[0]=new StructField("ID", DataTypes.IntegerType, false, Metadata.empty());
+		for(int i=0;i<27;i++){
+			fieldList[i+1]=new StructField("Col_"+i, DataTypes.LongType, false, Metadata.empty());
+		}
+		StructType schema=DataTypes.createStructType(fieldList);
+		SparkConst.MainSession.createDataFrame(resultRdd, schema).write().
+		mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
+	}
+	
 	public static void main(String[] args) throws SQLException {
 		/**
 		 * Create the container table
@@ -150,7 +176,8 @@ public class ItemDataBaseUtil implements Serializable{
 		 * Import data to itemInfo table
 		 */
 		System.out.println("import start...");
-		ImportDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemInfoFile\\ItemInfoFile",JDBCUtil.ItemInfo);
+		//ImportInfoDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemInfoFile\\ItemInfoFile",JDBCUtil.ItemInfo);
+		ImpoertContainerDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemContainerInfo\\ItemContainerInfo",JDBCUtil.ItemContainer);
 		System.out.println("import finish");
 	}
 }
