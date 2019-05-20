@@ -48,17 +48,13 @@ public class App
     	 * Analyzing the containerInfo
     	 */
     	//Because the program which is storing the iteminfo to database,there need to generate a new propertyInfo file
-    	itemAna.getItemContainer(FileConstValue.ServerPropertyInfoFileDir, 
+    	/*itemAna.getItemContainer(FileConstValue.ServerPropertyInfoFileDir, 
     			itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)),
-    			FileConstValue.ServerItemContainer_WritePath);
+    			FileConstValue.ServerItemContainer_WritePath);*/
     	
+    	itemAna.calEntityAliasToID(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)), 
+    			FileConstValue.ServerItemAlias_WritePath);
     	
-    	
-    	//============================================================================================//
-    	
-    	//============================================================================================//
-    	//testcode
-    	//System.out.println(EncodingDetect.codeString(FileConstValue.ServerOriginFileName));
     	//============================================================================================//
     }
 }

@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 
 import javax.swing.text.DefaultEditorKit.CutAction;
 
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FilterFunction;
@@ -398,5 +399,65 @@ public class AnalyseItemData implements Serializable{
 			return containerInfo;
 		}
 	} 
+	
+	public Dataset<Row> calEntityAliasToID(Dataset<Item> originData,String dirToStore){
+		final MaxAccumulator maxAliasLength=new MaxAccumulator();
+		JavaSparkContext tempContext=new JavaSparkContext(SparkConst.MainSession.sparkContext());
+		tempContext.sc().register(maxAliasLength, "maxAliasLength");
+		originData=originData.filter(new FilterFunction<Item>() {
+
+			@Override
+			public boolean call(Item value) throws Exception {
+				return value.aliases.get("en")==null?false:true;
+			}
+			
+		});
+		JavaRDD<Row> originItemToRow = originData.flatMap(new FlatMapFunction<Item,Row>(){
+
+			@Override
+			public Iterator<Row> call(Item item) throws Exception {
+				if(item.aliases.get("en")!=null){
+					ArrayList<Row> aRowList=new ArrayList<Row>();
+					for(int i=0;i<item.aliases.get("en").itemList.size();i++){
+						aRowList.add(RowFactory.create(item.aliases.get("en").itemList.get(i).value,item.entityId));
+					}
+					return aRowList.size()>0?aRowList.iterator():null;
+				}else{
+					return null;
+				}
+			}
+			
+		}, Encoders.bean(Row.class)).javaRDD();
+		JavaPairRDD<String, Iterable<Integer>> aliasKeyPairRdd = originItemToRow.mapToPair(new PairFunction<Row, String, Integer>() {
+
+			@Override
+			public Tuple2<String, Integer> call(Row value) throws Exception {
+				Integer entityId=Integer.parseInt(value.getString(1).substring(1,value.getString(1).length()));
+				return new Tuple2<String,Integer>(value.getString(0),entityId);
+				
+			}
+		}).groupByKey();
+		JavaRDD<Row> resultRdd = aliasKeyPairRdd.map(new Function<Tuple2<String,Iterable<Integer>>, Row>() {
+
+			@Override
+			public Row call(Tuple2<String, Iterable<Integer>> value) throws Exception {
+				String idArrStr="";
+				for(Integer id:value._2){
+					idArrStr+=String.valueOf(id)+FileConstValue.StrSeparator;
+				}
+				idArrStr=idArrStr.substring(0,idArrStr.length()-FileConstValue.StrSeparator.length());
+				maxAliasLength.add((long)(value._1.length()));
+				return RowFactory.create(value._1,idArrStr);
+			}
+		});
+		StructField alias=new StructField("alias", DataTypes.StringType, false, Metadata.empty());
+		StructField idArr=new StructField("idArr", DataTypes.StringType, true, Metadata.empty());
+		StructField[] fieldList={alias,idArr};
+		StructType schema=DataTypes.createStructType(fieldList);
+		Dataset<Row> aliasResult=SparkConst.MainSession.createDataFrame(resultRdd, schema);
+		aliasResult.write().mode(SaveMode.Overwrite).csv(dirToStore);
+		System.out.println(maxAliasLength.value());
+		return aliasResult;
+	}
 	
 }

@@ -75,7 +75,7 @@ public class FileConstValue {
 		}else{
 			ServerOriginFileName=DivideFilePath;
 			ServerPropertyDataFileReadPath="D:\\MyEclpse WorkSpace\\DataAny\\Data\\realData\\PropertyIndexInfo.txt";
-			ServerItemAlias_WritePath="E:\\KgData\\AnaData\\Alias";
+			ServerItemAlias_WritePath="D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\alias";
 			ServerItemContainer_WritePath="D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\ItemContainer";
 			ServerItemTypeInfo_WritePath="E:\\KgData\\AnaData\\TypeInfo";
 			ServerItemInfoPath=SourceFileDir+"ItemInfoFile";
