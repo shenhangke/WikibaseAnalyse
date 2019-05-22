@@ -524,6 +524,10 @@ public class AnalyseItemData implements Serializable{
 					ArrayList<Row> mainSnakList=new ArrayList<Row>();
 					for(Entry<String,Item.Property> itemMainSnak:item.claims.entrySet()){
 						for(int i=0;i<itemMainSnak.getValue().propertyInfos.size();i++){
+							if(itemMainSnak.getValue().propertyInfos.get(i).mainSnak.snakType!=Item.MainSnakType.Value){
+								continue;
+							}
+							//if(itemMainSnak.getValue().propertyInfos.get(i).mainSnak.dataType)
 							Integer ID=new Integer(Integer.parseInt(item.entityId.substring(1,item.entityId.length())));
 							Integer PID=new Integer(Integer.parseInt(itemMainSnak.getKey().substring(1,itemMainSnak.getKey().length())));
 							Byte snakType=itemMainSnak.getValue().propertyInfos.get(i).mainSnak.snakType.getRealValue();
@@ -531,7 +535,7 @@ public class AnalyseItemData implements Serializable{
 							//not finish
 						}
 					}
-					return null;
+					return mainSnakList.iterator();
 				}
 			
 			}, Encoders.bean(Row.class));
@@ -546,6 +550,15 @@ public class AnalyseItemData implements Serializable{
 				ArrayList<Row> dataTypeAndTypeNameList=new ArrayList<Row>();
 				for(Entry<String,Item.Property> itemMainSnak:item.claims.entrySet()){
 					for(int i=0;i<itemMainSnak.getValue().propertyInfos.size();i++){
+						if(itemMainSnak.getValue().propertyInfos.get(i).mainSnak.snakType!=Item.MainSnakType.Value){
+							continue;
+						}
+						if(itemMainSnak.getValue().propertyInfos.get(i).mainSnak.dataType==null){
+							continue;
+						}
+						if(itemMainSnak.getValue().propertyInfos.get(i).mainSnak.dataValue.type==null){
+							continue;
+						}
 						String dataTypeName=itemMainSnak.getValue().propertyInfos.get(i).mainSnak.dataType;
 						String typeName=itemMainSnak.getValue().propertyInfos.get(i).mainSnak.dataValue.type;
 						dataTypeAndTypeNameList.add(RowFactory.create(dataTypeName,typeName));
