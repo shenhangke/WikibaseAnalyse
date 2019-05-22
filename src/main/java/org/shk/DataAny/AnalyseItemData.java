@@ -589,6 +589,8 @@ public class AnalyseItemData implements Serializable{
 		StructType schema=DataTypes.createStructType(dataTypeFieldList);
 		SparkConst.MainSession.createDataFrame(dataTypeNames, schema).write().mode(SaveMode.Overwrite).csv(dataTypeStoreFilePath);
 		
+		System.gc();
+		
 		JavaRDD<Row> typeNames = dataTypeAndTypeRdd.mapToPair(new PairFunction<Row, String, Row>() {
 
 			@Override
@@ -607,6 +609,7 @@ public class AnalyseItemData implements Serializable{
 		});
 		
 		SparkConst.MainSession.createDataFrame(typeNames, schema).write().mode(SaveMode.Overwrite).csv(typeStoreFilePath);
+		System.gc();
 		
 		
 	}
