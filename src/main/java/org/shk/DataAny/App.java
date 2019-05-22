@@ -52,8 +52,18 @@ public class App
     			itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)),
     			FileConstValue.ServerItemContainer_WritePath);*/
     	
-    	itemAna.calEntityAliasToID(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)), 
-    			FileConstValue.ServerItemAlias_WritePath);
+    	
+    	/**
+    	 * Analyzing the alias info
+    	 */
+    	/*itemAna.calEntityAliasToID(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)), 
+    			FileConstValue.ServerItemAlias_WritePath);*/
+    	
+    	/**
+    	 * calculate the average mainsnak count
+    	 */
+    	System.out.println(itemAna.getMainsnakPropertyMeanCount(
+    			itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName))));
     	
     	//============================================================================================//
     }

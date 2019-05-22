@@ -166,6 +166,23 @@ public class ItemDataBaseUtil implements Serializable{
 		mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
 	}
 	
+	
+	public static void ImportAliasDataToDatabase(String dirPath,String tableName){
+		JavaRDD<Row> originData=SparkConst.MainSession.read().csv(dirPath).javaRDD();
+		StructField entityName=new StructField("alias", DataTypes.StringType, false, Metadata.empty());
+		StructField IdArr=new StructField("IdArr", DataTypes.StringType, false, Metadata.empty());
+		StructField[] fieldList={entityName,IdArr};
+		StructType schema=DataTypes.createStructType(fieldList);
+		SparkConst.MainSession.createDataFrame(originData, schema).write().
+		mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
+	}
+	
+	public static void CreateMainSnakTables(int tableCount){
+		for(int i=0;i<tableCount;i++){
+			
+		}
+	}
+	
 	public static void main(String[] args) throws SQLException {
 		/**
 		 * Create the container table
@@ -177,7 +194,8 @@ public class ItemDataBaseUtil implements Serializable{
 		 */
 		System.out.println("import start...");
 		//ImportInfoDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemInfoFile\\ItemInfoFile",JDBCUtil.ItemInfo);
-		ImpoertContainerDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemContainerInfo\\ItemContainerInfo",JDBCUtil.ItemContainer);
+		//ImpoertContainerDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemContainerInfo\\ItemContainerInfo",JDBCUtil.ItemContainer);
+		ImportAliasDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemAliasInfo\\ItemAliasInfo",JDBCUtil.ItemAlias);
 		System.out.println("import finish");
 	}
 }

@@ -44,6 +44,10 @@ import scala.Tuple2;
 public class DataAnalyse implements Serializable{
 
 	private static final long serialVersionUID = 1L;
+	
+	public static final int wiki_2015_50g_maxItemCount=18555611;
+	
+	public static final int tableCount=18555611;
 
 	private SparkSession session=null;
 	

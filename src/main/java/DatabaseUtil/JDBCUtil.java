@@ -25,7 +25,7 @@ public class JDBCUtil {
 	static public final String PropertyAlias="PropertyAlias";
 	static public final String PropertyMainSnak="PMainSnak";
 	static public final String ItemInfo="ItemInfo";
-	static public final String ItemAlias="ItemAlias";
+	static public final String ItemAlias="AliasMapToID";
 	static public final String ItemContainer="ItemContainer";
 	static public final String ItemTypeAnaTable="ItemType";
 	

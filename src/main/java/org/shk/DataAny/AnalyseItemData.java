@@ -41,6 +41,7 @@ import org.shk.JsonParse.Item.Property.PropertyInfo;
 import org.shk.constValue.FileConstValue;
 import org.shk.constValue.SparkConst;
 import org.shk.util.MaxAccumulator;
+import org.shk.util.MeanAccumulator;
 import org.shk.util.MinAccumulator;
 
 import DatabaseUtil.JDBCUtil;
@@ -458,6 +459,31 @@ public class AnalyseItemData implements Serializable{
 		aliasResult.write().mode(SaveMode.Overwrite).csv(dirToStore);
 		System.out.println(maxAliasLength.value());
 		return aliasResult;
+	}
+	
+	private int getMainSnakCount(Item item){
+		int count=0;
+		for(Entry<String,Item.Property> claimProperty:item.claims.entrySet()){
+			for(int i=0;i<claimProperty.getValue().propertyInfos.size();i++){
+				count++;
+			}
+		}
+		return count;
+	}
+	
+	public int getMainsnakPropertyMeanCount(Dataset<Item> originData){
+		final MeanAccumulator meanAcc=new MeanAccumulator();
+		JavaSparkContext tempContext=new JavaSparkContext(SparkConst.MainSession.sparkContext());
+		tempContext.sc().register(meanAcc, "meanAcc");
+		originData.foreach(new ForeachFunction<Item>() {
+
+			@Override
+			public void call(Item value) throws Exception {
+				int mainSnakCount=AnalyseItemData.this.getMainSnakCount(value);
+				meanAcc.add(new Integer(mainSnakCount));
+			}
+		});
+		return meanAcc.value();
 	}
 	
 }

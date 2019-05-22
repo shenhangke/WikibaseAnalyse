@@ -80,7 +80,7 @@ public class FileSplitUtil implements Serializable{
 					index++;
 					continue;
 				}
-				aLine=aLine.substring(0, aLine.length()-1).trim()+System.getProperty("line.separator");
+				//aLine=aLine.substring(0, aLine.length()-1).trim()+System.getProperty("line.separator");
 				FileUtils.writeStringToFile(outFile,aLine,"UTF-8",true);
 				index++;
 				System.out.println("handle line "+index);
@@ -127,4 +127,10 @@ public class FileSplitUtil implements Serializable{
 		}
 	}
 	
+	
+	public static void main(String[] args) throws IOException {
+		FileSplitUtil fileUtil=new FileSplitUtil("F:\\KgData\\latest-all.json",0);
+		fileUtil.preHandleFile(100000, "F:\\KgData\\div_To_zhao.json");
+		
+	}
 }
