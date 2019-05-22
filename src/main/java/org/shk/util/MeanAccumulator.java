@@ -11,7 +11,9 @@ public class MeanAccumulator extends AccumulatorV2<Integer,Integer>{
 	@Override
 	public void add(Integer value) {
 		// TODO Auto-generated method stub
+		//System.out.println("the value is : "+value);
 		this.totalCount+=value;
+		//System.out.println("the total value is: "+this.totalCount);
 		this.itemCount++;
 		this.currentAverage=totalCount/itemCount;
 	}

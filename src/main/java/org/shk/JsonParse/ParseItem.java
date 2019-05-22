@@ -165,6 +165,7 @@ public class ParseItem {
 						}
 						aTempMainSnak.property=mainSnak.getString("property");
 						aTempMainSnak.dataType=mainSnak.getString("datatype");
+						//aTempMainSnak.Type=mainSnak.getString("")
 						if(aTempMainSnak.snakType==Item.MainSnakType.Value){
 							JSONObject dataValue=mainSnak.getJSONObject("datavalue");
 							if(dataValue!=null){

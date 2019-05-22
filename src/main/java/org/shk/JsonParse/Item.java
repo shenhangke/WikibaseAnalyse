@@ -120,6 +120,7 @@ public class Item implements Serializable{
 					public String value="";
 				}
 				public DataValue dataValue=null;
+				//public String Type="";
 			}
 			public MainSnak mainSnak=null;
 			

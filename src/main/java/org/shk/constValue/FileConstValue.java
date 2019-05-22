@@ -41,6 +41,10 @@ public class FileConstValue {
 	
 	public static String ServerPropertyInfoFileDir="";
 	
+	public static String ServerDataTypeNameDir="";
+	
+	public static String ServerTypeNameDir="";
+	
 	
 	/**
 	 * The path which is store item info relate to item 
@@ -71,6 +75,8 @@ public class FileConstValue {
 				ServerPropertyInfoWritePath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/PropertyInfoFile";
 				ServerItemInfoPath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/ItemInfoFile";
 				ServerPropertyInfoFileDir=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/TempPropertyInfo/Info";
+				ServerDataTypeNameDir=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/DataTypeNames";
+				ServerTypeNameDir=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/TypeNames";
 			}
 		}else{
 			ServerOriginFileName=DivideFilePath;

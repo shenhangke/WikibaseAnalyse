@@ -62,9 +62,14 @@ public class App
     	/**
     	 * calculate the average mainsnak count
     	 */
-    	System.out.println(itemAna.getMainsnakPropertyMeanCount(
-    			itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName))));
+    	/*System.out.println(itemAna.getMainsnakPropertyMeanCount(
+    			itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName))));*/
     	
+    	/**
+    	 * get the dataType and type 
+    	 */
+    	itemAna.getMainSnakDataTypeInfoCountAndName(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)),
+    			FileConstValue.ServerDataTypeNameDir, FileConstValue.ServerTypeNameDir);
     	//============================================================================================//
     }
 }

@@ -46,6 +46,7 @@ import org.shk.util.MinAccumulator;
 
 import DatabaseUtil.JDBCUtil;
 import DatabaseUtil.PropertyDatabaseUtil;
+import DatabaseUtil.WikibaseInfoConst;
 import scala.Tuple2;
 import shapeless.newtype;
 
@@ -227,6 +228,10 @@ public class AnalyseItemData implements Serializable{
 		returnValue.setMinIdValue(minIdNumAcc.value());
 		return returnValue;
 		//return maxIdNumAcc.value();
+	}
+	
+	private int IdToIndex(double ratio,int currentID,int minID){
+		return (int)(ratio*((double)(currentID-minID)));
 	}
 	
 	/**
@@ -484,6 +489,113 @@ public class AnalyseItemData implements Serializable{
 			}
 		});
 		return meanAcc.value();
+	}
+	
+	public void getMainSnakInfoAndStoreToFile(Dataset<Item> originData,String storeFileName){
+		JavaSparkContext tempContext=new JavaSparkContext(SparkConst.MainSession.sparkContext());
+		for(int i=1;i<=WikibaseInfoConst.tableCount;i++){
+			int startIndex=((i-1)*(WikibaseInfoConst.wiki_2015_50g_maxItemCount/WikibaseInfoConst.tableCount))+1;
+			int endIndex=0;
+			if(i==WikibaseInfoConst.tableCount){
+				endIndex=WikibaseInfoConst.wiki_2015_50g_maxItemCount;
+			}else{
+				endIndex=i*(WikibaseInfoConst.wiki_2015_50g_maxItemCount/WikibaseInfoConst.tableCount);
+			}
+			final Broadcast<Integer> startIndexBroadcast=tempContext.broadcast(new Integer(startIndex));
+			final Broadcast<Integer> endIndexBroadcast=tempContext.broadcast(new Integer(endIndex));
+			originData.filter(new FilterFunction<Item>(){
+
+				@Override
+				public boolean call(Item value) throws Exception {
+					int currenID=Integer.parseInt(value.entityId.substring(1,value.entityId.length()));
+					int index=AnalyseItemData.this.IdToIndex(WikibaseInfoConst.ratio, currenID, 
+							WikibaseInfoConst.minItemId);
+					if((index>endIndexBroadcast.value())||(index<startIndexBroadcast.value())){
+						return false;
+					}else{
+						return true;
+					}
+				}
+				
+			}).flatMap(new FlatMapFunction<Item,Row>() {
+
+				@Override
+				public Iterator<Row> call(Item item) throws Exception {
+					ArrayList<Row> mainSnakList=new ArrayList<Row>();
+					for(Entry<String,Item.Property> itemMainSnak:item.claims.entrySet()){
+						for(int i=0;i<itemMainSnak.getValue().propertyInfos.size();i++){
+							Integer ID=new Integer(Integer.parseInt(item.entityId.substring(1,item.entityId.length())));
+							Integer PID=new Integer(Integer.parseInt(itemMainSnak.getKey().substring(1,itemMainSnak.getKey().length())));
+							Byte snakType=itemMainSnak.getValue().propertyInfos.get(i).mainSnak.snakType.getRealValue();
+							//=========//
+							//not finish
+						}
+					}
+					return null;
+				}
+			
+			}, Encoders.bean(Row.class));
+		}
+	}
+	
+	public void getMainSnakDataTypeInfoCountAndName(Dataset<Item> originData,String dataTypeStoreFilePath,String typeStoreFilePath){
+		JavaRDD<Row> dataTypeAndTypeRdd = originData.flatMap(new FlatMapFunction<Item,Row>() {
+
+			@Override
+			public Iterator<Row> call(Item item) throws Exception {
+				ArrayList<Row> dataTypeAndTypeNameList=new ArrayList<Row>();
+				for(Entry<String,Item.Property> itemMainSnak:item.claims.entrySet()){
+					for(int i=0;i<itemMainSnak.getValue().propertyInfos.size();i++){
+						String dataTypeName=itemMainSnak.getValue().propertyInfos.get(i).mainSnak.dataType;
+						String typeName=itemMainSnak.getValue().propertyInfos.get(i).mainSnak.dataValue.type;
+						dataTypeAndTypeNameList.add(RowFactory.create(dataTypeName,typeName));
+					}
+				}
+				return dataTypeAndTypeNameList.iterator();
+			}
+			
+		}, Encoders.bean(Row.class)).javaRDD();
+		JavaRDD<Row> dataTypeNames = dataTypeAndTypeRdd.mapToPair(new PairFunction<Row, String, Row>() {
+
+			@Override
+			public Tuple2<String, Row> call(Row t) throws Exception {
+				return new Tuple2<String, Row>(t.getString(0),t);
+			}
+			
+		}).groupByKey().map(new Function<Tuple2<String,Iterable<Row>>, Row>() {
+
+			@Override
+			public Row call(Tuple2<String, Iterable<Row>> value) throws Exception {
+				// TODO Auto-generated method stub
+				return RowFactory.create(value._1);
+			}
+			
+		});
+		StructField dataTypeName=new StructField("name", DataTypes.StringType, true, Metadata.empty());
+		StructField[] dataTypeFieldList={dataTypeName};
+		StructType schema=DataTypes.createStructType(dataTypeFieldList);
+		SparkConst.MainSession.createDataFrame(dataTypeNames, schema).write().mode(SaveMode.Overwrite).csv(dataTypeStoreFilePath);
+		
+		JavaRDD<Row> typeNames = dataTypeAndTypeRdd.mapToPair(new PairFunction<Row, String, Row>() {
+
+			@Override
+			public Tuple2<String, Row> call(Row t) throws Exception {
+				return new Tuple2<String, Row>(t.getString(1),t);
+			}
+			
+		}).groupByKey().map(new Function<Tuple2<String,Iterable<Row>>, Row>() {
+
+			@Override
+			public Row call(Tuple2<String, Iterable<Row>> value) throws Exception {
+				// TODO Auto-generated method stub
+				return RowFactory.create(value._1);
+			}
+			
+		});
+		
+		SparkConst.MainSession.createDataFrame(typeNames, schema).write().mode(SaveMode.Overwrite).csv(typeStoreFilePath);
+		
+		
 	}
 	
 }
