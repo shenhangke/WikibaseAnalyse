@@ -8,13 +8,7 @@ uses
   Data.SqlExpr, Data.DBXMySQL, Data.DBXOracle, Data.Win.ADODB, Vcl.StdCtrls;
 
 type
-  TForm1 = class(TForm)
-    ConnectionMySql: TSQLConnection;
-    SimDataSetMySql: TSimpleDataSet;
-    DataSource: TDataSource;
-    con1: TADOConnection;
-    btn1: TButton;
-    qry1: TADOQuery;
+  TWikibaseApp = class(TForm)
     procedure btn1Click(Sender: TObject);
   private
     { Private declarations }
@@ -23,13 +17,13 @@ type
   end;
 
 var
-  Form1: TForm1;
+  WikibaseApp: TWikibaseApp;
 
 implementation
 
 {$R *.dfm}
 
-procedure TForm1.btn1Click(Sender: TObject);
+procedure TWikibaseApp.btn1Click(Sender: TObject);
 begin
   try
     self.con1.ConnectionString:='Driver={MySQL ODBC 8.0 Unicode Driver};Server=127.0.0.1;Database=wikibase;User=root; Password=5166266skf;Option=3;';

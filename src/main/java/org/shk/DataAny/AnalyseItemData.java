@@ -543,6 +543,20 @@ public class AnalyseItemData implements Serializable{
 	}
 	
 	public void getMainSnakDataTypeInfoCountAndName(Dataset<Item> originData,String dataTypeStoreFilePath,String typeStoreFilePath){
+		originData=originData.filter(new FilterFunction<Item>(){
+
+			@Override
+			public boolean call(Item value) throws Exception {
+				int idNum=Integer.parseInt(value.entityId.substring(1, value.entityId.length()));
+				if(idNum<10000000){
+					return true;
+				}else{
+					return false;
+				}
+			}
+			
+		});
+		
 		JavaRDD<Row> dataTypeAndTypeRdd = originData.flatMap(new FlatMapFunction<Item,Row>() {
 
 			@Override
@@ -568,17 +582,17 @@ public class AnalyseItemData implements Serializable{
 			}
 			
 		}, Encoders.bean(Row.class)).javaRDD();
-		JavaRDD<Row> dataTypeNames = dataTypeAndTypeRdd.mapToPair(new PairFunction<Row, String, Row>() {
+		JavaRDD<Row> dataTypeNames = dataTypeAndTypeRdd.mapToPair(new PairFunction<Row, String, String>() {
 
 			@Override
-			public Tuple2<String, Row> call(Row t) throws Exception {
-				return new Tuple2<String, Row>(t.getString(0),t);
+			public Tuple2<String, String> call(Row t) throws Exception {
+				return new Tuple2<String, String>(t.getString(0),t.getString(0));
 			}
 			
-		}).groupByKey().map(new Function<Tuple2<String,Iterable<Row>>, Row>() {
+		}).groupByKey().map(new Function<Tuple2<String,Iterable<String>>, Row>() {
 
 			@Override
-			public Row call(Tuple2<String, Iterable<Row>> value) throws Exception {
+			public Row call(Tuple2<String, Iterable<String>> value) throws Exception {
 				// TODO Auto-generated method stub
 				return RowFactory.create(value._1);
 			}
@@ -589,7 +603,7 @@ public class AnalyseItemData implements Serializable{
 		StructType schema=DataTypes.createStructType(dataTypeFieldList);
 		SparkConst.MainSession.createDataFrame(dataTypeNames, schema).write().mode(SaveMode.Overwrite).csv(dataTypeStoreFilePath);
 		
-		System.gc();
+		/*System.gc();
 		
 		JavaRDD<Row> typeNames = dataTypeAndTypeRdd.mapToPair(new PairFunction<Row, String, Row>() {
 
@@ -609,7 +623,7 @@ public class AnalyseItemData implements Serializable{
 		});
 		
 		SparkConst.MainSession.createDataFrame(typeNames, schema).write().mode(SaveMode.Overwrite).csv(typeStoreFilePath);
-		System.gc();
+		System.gc();*/
 		
 		
 	}

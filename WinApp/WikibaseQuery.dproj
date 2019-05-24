@@ -89,7 +89,7 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="MainWin.pas">
-            <Form>Form1</Form>
+            <Form>WikibaseApp</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <BuildConfiguration Include="Release">
