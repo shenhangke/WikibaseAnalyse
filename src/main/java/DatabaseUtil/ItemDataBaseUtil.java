@@ -203,7 +203,7 @@ public class ItemDataBaseUtil implements Serializable{
 		StructType schema=DataTypes.createStructType(fieldList);
 		ArrayList<Dataset<Row>> rddList=new ArrayList<Dataset<Row>>();
 		for(int i=0;i<fileDir.length;i++){
-			JavaRDD<Row> tempPart = SparkConst.MainSession.read().csv(fileDir[0]).javaRDD();
+			JavaRDD<Row> tempPart = SparkConst.MainSession.read().csv(fileDir[i]).javaRDD();
 			//rddList.add(tempPart);
 			rddList.add(SparkConst.MainSession.createDataFrame(tempPart, schema));
 		}
@@ -215,6 +215,31 @@ public class ItemDataBaseUtil implements Serializable{
 		totalRow.distinct().write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
 		
 	}
+	
+	public static void ImportTypeInfoToDatabase(String[] files,String tableName){
+		StructField dataTypeName=new StructField("typeName", DataTypes.StringType, false, Metadata.empty());
+		StructField[] fieldList={dataTypeName};
+		StructType schema=DataTypes.createStructType(fieldList);
+		ArrayList<Dataset<Row>> rddList=new ArrayList<Dataset<Row>>();
+		for(int i=0;i<files.length;i++){
+			JavaRDD<Row> tempPart = SparkConst.MainSession.read().csv(files[i]).javaRDD();
+			//rddList.add(tempPart);
+			rddList.add(SparkConst.MainSession.createDataFrame(tempPart, schema));
+		}
+		Dataset<Row> totalRow=rddList.get(0);
+		for(int i=1;i<rddList.size();i++){
+			totalRow=totalRow.union(rddList.get(i));
+		}
+		totalRow.distinct().write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
+	}
+	
+	public static void storeDataToFile(String tableName,String filePath){
+		SparkConst.MainSession.read().
+		jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetReadProperties(tableName)).write().mode(SaveMode.Overwrite)
+		.csv(filePath);
+	}
+	
+	
 	
 	public static void main(String[] args) throws SQLException {
 		/**
@@ -229,9 +254,13 @@ public class ItemDataBaseUtil implements Serializable{
 		//ImportInfoDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemInfoFile\\ItemInfoFile",JDBCUtil.ItemInfo);
 		//ImpoertContainerDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemContainerInfo\\ItemContainerInfo",JDBCUtil.ItemContainer);
 		//ImportAliasDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemAliasInfo\\ItemAliasInfo",JDBCUtil.ItemAlias);
-		//String[] dirList={"D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_minto10000000\\DataTypeNames","D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_maxto10000000"};
-		//ImportDataTypeInfoToDatabase(dirList,JDBCUtil.DataTypeNameTable);
-		CreateMainSnakTables(WikibaseInfoConst.tableCount);
+		String[] dirList={"D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_minto10000000\\DataTypeNames","D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_maxto10000000"};
+		ImportDataTypeInfoToDatabase(dirList,JDBCUtil.DataTypeNameTable);
+		//CreateMainSnakTables(WikibaseInfoConst.tableCount);
+		/*String[] dirList={"D:\\MyEclpse WorkSpace\\DataProject_Data\\TypeNames_minto10000000",
+				"D:\\MyEclpse WorkSpace\\DataProject_Data\\TypeNames_maxto10000000"};
+		ImportTypeInfoToDatabase(dirList,JDBCUtil.TypeInfo);*/
+		storeDataToFile(JDBCUtil.DataTypeNameTable,"D:\\MyEclpse WorkSpace\\DataAny\\Data\\DataType");
 		System.out.println("import finish");
 	}
 	

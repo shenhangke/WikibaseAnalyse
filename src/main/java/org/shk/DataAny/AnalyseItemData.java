@@ -44,6 +44,9 @@ import org.shk.util.MaxAccumulator;
 import org.shk.util.MeanAccumulator;
 import org.shk.util.MinAccumulator;
 
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
+
 import DatabaseUtil.JDBCUtil;
 import DatabaseUtil.PropertyDatabaseUtil;
 import DatabaseUtil.WikibaseInfoConst;
@@ -491,8 +494,32 @@ public class AnalyseItemData implements Serializable{
 		return meanAcc.value();
 	}
 	
-	public void getMainSnakInfoAndStoreToFile(Dataset<Item> originData,String storeFileName){
+	private HashMap<String,Byte> getTypeInfoFromDatabase(String originFilePath){
+		List<Row> originDataList = SparkConst.MainSession.read().csv(originFilePath).collectAsList();
+		if(originDataList.size()==0){
+			return null;
+		}
+		HashMap<String,Byte> result=new HashMap<String, Byte>();
+		for(int i=0;i<originDataList.size();i++){
+			result.put(originDataList.get(i).getString(1), new Byte(Byte.parseByte(originDataList.get(i).getString(0))));
+		}
+		return result;
+	} 
+	
+	public void getMainSnakInfoAndStoreToFile(Dataset<Item> originData,String preFixStoreFileName,String dataTypeFilePath
+			,String typeFilePath) throws Exception{
 		JavaSparkContext tempContext=new JavaSparkContext(SparkConst.MainSession.sparkContext());
+		//map dataType and type to broadcast
+		HashMap<String, Byte> dataTypeMap = getTypeInfoFromDatabase(dataTypeFilePath);
+		if(dataTypeMap==null){
+			throw new Exception("the dataType hashMap is null");
+		}
+		HashMap<String, Byte> typeMap = getTypeInfoFromDatabase(typeFilePath);
+		if(typeMap==null){
+			throw new Exception("the Type hashMap is null");
+		}
+		final Broadcast<HashMap<String,Byte>> dataTypeBroadcast=tempContext.broadcast(dataTypeMap);
+		final Broadcast<HashMap<String,Byte>> typeBroadcast=tempContext.broadcast(typeMap);
 		for(int i=1;i<=WikibaseInfoConst.tableCount;i++){
 			int startIndex=((i-1)*(WikibaseInfoConst.wiki_2015_50g_maxItemCount/WikibaseInfoConst.tableCount))+1;
 			int endIndex=0;
@@ -503,7 +530,7 @@ public class AnalyseItemData implements Serializable{
 			}
 			final Broadcast<Integer> startIndexBroadcast=tempContext.broadcast(new Integer(startIndex));
 			final Broadcast<Integer> endIndexBroadcast=tempContext.broadcast(new Integer(endIndex));
-			originData.filter(new FilterFunction<Item>(){
+			JavaRDD<Row> mainSnakPart = originData.filter(new FilterFunction<Item>(){
 
 				@Override
 				public boolean call(Item value) throws Exception {
@@ -523,22 +550,62 @@ public class AnalyseItemData implements Serializable{
 				public Iterator<Row> call(Item item) throws Exception {
 					ArrayList<Row> mainSnakList=new ArrayList<Row>();
 					for(Entry<String,Item.Property> itemMainSnak:item.claims.entrySet()){
-						for(int i=0;i<itemMainSnak.getValue().propertyInfos.size();i++){
-							if(itemMainSnak.getValue().propertyInfos.get(i).mainSnak.snakType!=Item.MainSnakType.Value){
+						for(int j=0;j<itemMainSnak.getValue().propertyInfos.size();j++){
+							if(itemMainSnak.getValue().propertyInfos.get(j).mainSnak.snakType!=Item.MainSnakType.Value){
 								continue;
 							}
 							//if(itemMainSnak.getValue().propertyInfos.get(i).mainSnak.dataType)
 							Integer ID=new Integer(Integer.parseInt(item.entityId.substring(1,item.entityId.length())));
 							Integer PID=new Integer(Integer.parseInt(itemMainSnak.getKey().substring(1,itemMainSnak.getKey().length())));
-							Byte snakType=itemMainSnak.getValue().propertyInfos.get(i).mainSnak.snakType.getRealValue();
-							//=========//
-							//not finish
+							Byte snakType=itemMainSnak.getValue().propertyInfos.get(j).mainSnak.snakType.getRealValue();
+							Byte dataType=dataTypeBroadcast.getValue().get(itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataType);
+							if(dataType==null){
+								/*System.out.println(itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataType);
+								dataType=10;*/
+								throw new Exception("dataType is null,the dataType name is: "+itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataType);
+							}
+							Byte type=typeBroadcast.getValue().get(itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataValue.type);
+							String valueNameArr="";
+							String valueArr="";
+							try{
+								JSONObject mainSnakValue=(JSONObject)JSONObject.parse(itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataValue.value);
+								for(Entry<String,Object> dataValue:mainSnakValue.entrySet()){
+									valueNameArr+=dataValue.getKey()+FileConstValue.StrSeparator;
+									valueArr+=dataValue.getValue().toString()+FileConstValue.StrSeparator;
+								}
+								valueNameArr=valueNameArr.substring(0,valueNameArr.length()-FileConstValue.StrSeparator.length());
+								valueArr=valueArr.substring(0,valueArr.length()-FileConstValue.StrSeparator.length());
+								//System.out.println("has more than one value,the name is: "+valueNameArr);
+							}catch(ClassCastException e){
+								valueArr=itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataValue.value;
+								valueNameArr="value";
+							}catch(JSONException e){
+								/*System.out.println(itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataValue.value);
+								System.out.println(item.entityId);
+								throw e;*/
+								valueArr=itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataValue.value;
+								valueNameArr="value";
+							}catch(Exception e){
+								valueArr=itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataValue.value;
+								valueNameArr="value";
+							}
+							mainSnakList.add(RowFactory.create(ID,PID,snakType,dataType,type,valueNameArr,valueArr));
 						}
 					}
 					return mainSnakList.iterator();
 				}
 			
-			}, Encoders.bean(Row.class));
+			}, Encoders.bean(Row.class)).javaRDD();
+			StructField ID=new StructField("QID", DataTypes.IntegerType, false, Metadata.empty());
+			StructField propertyId=new StructField("propertyId", DataTypes.IntegerType, false, Metadata.empty());
+			StructField snakType=new StructField("snakType", DataTypes.ByteType, false, Metadata.empty());
+			StructField dataType=new StructField("dataType", DataTypes.ByteType, false, Metadata.empty());
+			StructField type=new StructField("type", DataTypes.ByteType, false, Metadata.empty());
+			StructField nameArr=new StructField("nameArr", DataTypes.StringType, false, Metadata.empty());
+			StructField valueArr=new StructField("valueArr", DataTypes.StringType, false, Metadata.empty());
+			StructField[] fieldList={ID,propertyId,snakType,dataType,type,nameArr,valueArr};
+			StructType schema=DataTypes.createStructType(fieldList);
+			SparkConst.MainSession.createDataFrame(mainSnakPart, schema).write().mode(SaveMode.Overwrite).csv(preFixStoreFileName+"_"+i);
 		}
 	}
 	

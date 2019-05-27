@@ -45,6 +45,12 @@ public class FileConstValue {
 	
 	public static String ServerTypeNameDir="";
 	
+	public static String MainSnakPreFix="";
+	
+	public static String DataTypeFilePath="";
+	
+	public static String TypeFilePath="";
+	
 	
 	/**
 	 * The path which is store item info relate to item 
@@ -77,6 +83,9 @@ public class FileConstValue {
 				ServerPropertyInfoFileDir=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/TempPropertyInfo/Info";
 				ServerDataTypeNameDir=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/DataTypeNames";
 				ServerTypeNameDir=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/TypeNames";
+				MainSnakPreFix=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/mainSnak/mainSnak";
+				DataTypeFilePath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/DataType";
+				TypeFilePath=ServerFileUrlSourceDir+"/Builds/shenhangke/DataReposity/Type";
 			}
 		}else{
 			ServerOriginFileName=DivideFilePath;

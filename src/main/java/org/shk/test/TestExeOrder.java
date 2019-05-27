@@ -16,6 +16,9 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+import org.shk.DataAny.AnalyseItemData;
+import org.shk.DataAny.AnalyseItemData.CountInfo;
+import org.shk.DataAny.DataAnalyse;
 import org.shk.constValue.FileConstValue;
 import org.shk.constValue.SparkConst;
 import org.shk.util.EncodingDetect;
@@ -35,12 +38,20 @@ public class TestExeOrder {
 		//TestSotreInDatabaseEncoding("D:\\MyEclpse WorkSpace\\DataProject_Data\\TestData\\part-01351-4182331a-6b39-4788-a2f8-3f33968cd9a9-c000.csv","");
 		//System.out.println((double)(18555611.0/20991701.0));
 		//System.out.println((int)(127/64));
-		String test="1233"+FileConstValue.StrSeparator+"234324";
+		/*String test="1233"+FileConstValue.StrSeparator+"234324";
 		String[] testArr=test.split(FileConstValue.StrSeparator);
 		System.out.println(testArr.length);
 		for(int i=0;i<testArr.length;i++){
 			System.out.println(testArr[i]);
-		}
+		}*/
+		
+		AnalyseItemData anaItem=new AnalyseItemData(SparkConst.MainSession);
+		DataAnalyse dataAna=new DataAnalyse(SparkConst.MainSession);
+		CountInfo maxIdNum = anaItem.getMaxIdNum(anaItem.getItemDataItem(dataAna.extractDataItem(FileConstValue.DivideFilePath)));
+		System.out.println(maxIdNum.getMaxIdValue());
+		System.out.println(maxIdNum.getMaxItemCount());
+		System.out.println(maxIdNum.getMinIdValue());
+		//System.out.println(maxIdNum.getMaxIdValue());
 	}
 	
 	public static void TestReadDirFile(){
@@ -107,5 +118,6 @@ public class TestExeOrder {
 		SparkConst.MainSession.createDataFrame(testDatasetRdd, schema).write().mode(SaveMode.Overwrite).jdbc(DatabaseUtil.JDBCUtil.DB_URL, JDBCUtil.ItemInfo, JDBCUtil.GetWriteProperties(JDBCUtil.ItemInfo));
 		//readFromCsvDataset.write().mode(SaveMode.Overwrite).jdbc(DatabaseUtil.JDBCUtil.DB_URL, JDBCUtil.ItemInfo, JDBCUtil.GetWriteProperties(JDBCUtil.ItemInfo));
 	}
+	
 }
 

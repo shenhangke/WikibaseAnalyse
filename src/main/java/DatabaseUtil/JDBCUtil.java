@@ -30,6 +30,7 @@ public class JDBCUtil {
 	static public final String ItemContainer="ItemContainer";
 	static public final String ItemTypeAnaTable="ItemType";
 	static public final String DataTypeNameTable="dataTypeMap";
+	static public final String TypeInfo="typeMap";
 	
 	/**
 	 * Database drive info

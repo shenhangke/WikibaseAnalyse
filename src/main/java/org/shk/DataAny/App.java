@@ -68,8 +68,12 @@ public class App
     	/**
     	 * get the dataType and type 
     	 */
-    	itemAna.getTypeInfo(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)),
-    			FileConstValue.ServerTypeNameDir);
+    	/*itemAna.getTypeInfo(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)),
+    			FileConstValue.ServerTypeNameDir);*/
+    	itemAna.getMainSnakInfoAndStoreToFile(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)), 
+    			FileConstValue.MainSnakPreFix, 
+    			FileConstValue.DataTypeFilePath, 
+    			FileConstValue.TypeFilePath);
     	//============================================================================================//
     }
 }
