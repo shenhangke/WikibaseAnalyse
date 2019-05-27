@@ -634,7 +634,7 @@ public class AnalyseItemData implements Serializable{
 			@Override
 			public boolean call(Item value) throws Exception {
 				int idNum=Integer.parseInt(value.entityId.substring(1, value.entityId.length()));
-				if(idNum<10000000){
+				if(idNum>=10000000){
 					return true;
 				}else{
 					return false;

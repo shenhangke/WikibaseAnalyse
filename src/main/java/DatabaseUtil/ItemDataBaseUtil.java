@@ -3,6 +3,7 @@ package DatabaseUtil;
 import java.io.File;
 import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -177,9 +178,22 @@ public class ItemDataBaseUtil implements Serializable{
 		mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
 	}
 	
-	public static void CreateMainSnakTables(int tableCount){
-		for(int i=0;i<tableCount;i++){
-			
+	public static void CreateMainSnakTables(int tableCount) throws SQLException{
+		Connection connection=null;
+		Statement state=null;
+		try{
+			connection=JDBCUtil.GetConnection();
+			state=connection.createStatement();
+			for(int i=0;i<tableCount;i++){
+				String createTableSql="create table mainSnak_"+i+" "
+						+ "(QID int signed,propertyId smallint signed,snakType tinyint signed,dataType tinyint signed,"
+						+ "type tinyint signed,"
+						+ "nameArr text,valueArr text,key ItemAndPropertyID (QID,propertyId))";
+				state.execute(createTableSql);
+			}
+		}finally{
+			JDBCUtil.CloseResource(connection, state, null);
+			//state.close();
 		}
 	}
 	
@@ -215,8 +229,9 @@ public class ItemDataBaseUtil implements Serializable{
 		//ImportInfoDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemInfoFile\\ItemInfoFile",JDBCUtil.ItemInfo);
 		//ImpoertContainerDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemContainerInfo\\ItemContainerInfo",JDBCUtil.ItemContainer);
 		//ImportAliasDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemAliasInfo\\ItemAliasInfo",JDBCUtil.ItemAlias);
-		String[] dirList={"D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_minto10000000\\DataTypeNames","D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_maxto10000000"};
-		ImportDataTypeInfoToDatabase(dirList,JDBCUtil.DataTypeNameTable);
+		//String[] dirList={"D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_minto10000000\\DataTypeNames","D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_maxto10000000"};
+		//ImportDataTypeInfoToDatabase(dirList,JDBCUtil.DataTypeNameTable);
+		CreateMainSnakTables(WikibaseInfoConst.tableCount);
 		System.out.println("import finish");
 	}
 	

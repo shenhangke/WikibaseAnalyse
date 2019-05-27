@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
 public class JDBCUtil {
@@ -81,6 +82,18 @@ public class JDBCUtil {
 	}
 	
 	public static void CloseResource(Connection connection,PreparedStatement statement,ResultSet resultSet) throws SQLException{
+		if(connection!=null){
+			connection.close();
+		}
+		if(statement!=null){
+			statement.close();
+		}
+		if(resultSet!=null){
+			resultSet.close();
+		}
+	}
+	
+	public static void CloseResource(Connection connection,Statement statement,ResultSet resultSet) throws SQLException{
 		if(connection!=null){
 			connection.close();
 		}
