@@ -28,6 +28,7 @@ public class JDBCUtil {
 	static public final String ItemAlias="AliasMapToID";
 	static public final String ItemContainer="ItemContainer";
 	static public final String ItemTypeAnaTable="ItemType";
+	static public final String DataTypeNameTable="dataTypeMap";
 	
 	/**
 	 * Database drive info

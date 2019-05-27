@@ -628,4 +628,67 @@ public class AnalyseItemData implements Serializable{
 		
 	}
 	
+	public void getTypeInfo(Dataset<Item> originData,String storeFilePath){
+		originData=originData.filter(new FilterFunction<Item>(){
+
+			@Override
+			public boolean call(Item value) throws Exception {
+				int idNum=Integer.parseInt(value.entityId.substring(1, value.entityId.length()));
+				if(idNum<10000000){
+					return true;
+				}else{
+					return false;
+				}
+			}
+			
+		});
+		
+		JavaRDD<Row> dataTypeAndTypeRdd = originData.flatMap(new FlatMapFunction<Item,Row>() {
+
+			@Override
+			public Iterator<Row> call(Item item) throws Exception {
+				ArrayList<Row> dataTypeAndTypeNameList=new ArrayList<Row>();
+				for(Entry<String,Item.Property> itemMainSnak:item.claims.entrySet()){
+					for(int i=0;i<itemMainSnak.getValue().propertyInfos.size();i++){
+						if(itemMainSnak.getValue().propertyInfos.get(i).mainSnak.snakType!=Item.MainSnakType.Value){
+							continue;
+						}
+						if(itemMainSnak.getValue().propertyInfos.get(i).mainSnak.dataType==null){
+							continue;
+						}
+						if(itemMainSnak.getValue().propertyInfos.get(i).mainSnak.dataValue.type==null){
+							continue;
+						}
+						String dataTypeName=itemMainSnak.getValue().propertyInfos.get(i).mainSnak.dataType;
+						String typeName=itemMainSnak.getValue().propertyInfos.get(i).mainSnak.dataValue.type;
+						dataTypeAndTypeNameList.add(RowFactory.create(dataTypeName,typeName));
+					}
+				}
+				return dataTypeAndTypeNameList.iterator();
+			}
+			
+		}, Encoders.bean(Row.class)).javaRDD();
+		JavaRDD<Row> dataTypeNames = dataTypeAndTypeRdd.mapToPair(new PairFunction<Row, String, String>() {
+
+			@Override
+			public Tuple2<String, String> call(Row t) throws Exception {
+				return new Tuple2<String, String>(t.getString(1),t.getString(1));
+			}
+			
+		}).groupByKey().map(new Function<Tuple2<String,Iterable<String>>, Row>() {
+
+			@Override
+			public Row call(Tuple2<String, Iterable<String>> value) throws Exception {
+				// TODO Auto-generated method stub
+				return RowFactory.create(value._1);
+			}
+			
+		});
+		StructField dataTypeName=new StructField("name", DataTypes.StringType, true, Metadata.empty());
+		StructField[] dataTypeFieldList={dataTypeName};
+		StructType schema=DataTypes.createStructType(dataTypeFieldList);
+		SparkConst.MainSession.createDataFrame(dataTypeNames, schema).write().mode(SaveMode.Overwrite).csv(storeFilePath);
+	}
+	
+	
 }

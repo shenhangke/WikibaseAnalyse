@@ -68,8 +68,8 @@ public class App
     	/**
     	 * get the dataType and type 
     	 */
-    	itemAna.getMainSnakDataTypeInfoCountAndName(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)),
-    			FileConstValue.ServerDataTypeNameDir, FileConstValue.ServerTypeNameDir);
+    	itemAna.getTypeInfo(itemAna.getItemDataItem(originDataAna.extractDataItem(FileConstValue.ServerOriginFileName)),
+    			FileConstValue.ServerTypeNameDir);
     	//============================================================================================//
     }
 }

@@ -183,6 +183,25 @@ public class ItemDataBaseUtil implements Serializable{
 		}
 	}
 	
+	public static void ImportDataTypeInfoToDatabase(String[] fileDir,String tableName){
+		StructField dataTypeName=new StructField("dataTypeName", DataTypes.StringType, false, Metadata.empty());
+		StructField[] fieldList={dataTypeName};
+		StructType schema=DataTypes.createStructType(fieldList);
+		ArrayList<Dataset<Row>> rddList=new ArrayList<Dataset<Row>>();
+		for(int i=0;i<fileDir.length;i++){
+			JavaRDD<Row> tempPart = SparkConst.MainSession.read().csv(fileDir[0]).javaRDD();
+			//rddList.add(tempPart);
+			rddList.add(SparkConst.MainSession.createDataFrame(tempPart, schema));
+		}
+		Dataset<Row> totalRow=rddList.get(0);
+		for(int i=1;i<rddList.size();i++){
+			totalRow=totalRow.union(rddList.get(i));
+		}
+		//totalRow.distinct().show();
+		totalRow.distinct().write().mode(SaveMode.Overwrite).jdbc(JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
+		
+	}
+	
 	public static void main(String[] args) throws SQLException {
 		/**
 		 * Create the container table
@@ -195,7 +214,10 @@ public class ItemDataBaseUtil implements Serializable{
 		System.out.println("import start...");
 		//ImportInfoDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemInfoFile\\ItemInfoFile",JDBCUtil.ItemInfo);
 		//ImpoertContainerDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemContainerInfo\\ItemContainerInfo",JDBCUtil.ItemContainer);
-		ImportAliasDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemAliasInfo\\ItemAliasInfo",JDBCUtil.ItemAlias);
+		//ImportAliasDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemAliasInfo\\ItemAliasInfo",JDBCUtil.ItemAlias);
+		String[] dirList={"D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_minto10000000\\DataTypeNames","D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_maxto10000000"};
+		ImportDataTypeInfoToDatabase(dirList,JDBCUtil.DataTypeNameTable);
 		System.out.println("import finish");
 	}
+	
 }
