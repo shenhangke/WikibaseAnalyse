@@ -562,7 +562,12 @@ public class AnalyseItemData implements Serializable{
 							if(dataType==null){
 								/*System.out.println(itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataType);
 								dataType=10;*/
-								throw new Exception("dataType is null,the dataType name is: "+itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataType);
+								if(itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataType==null){
+									continue;
+								}else{
+									//throw new Exception("dataType is null,the dataType name is: "+itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataType);
+									dataType=10;
+								}
 							}
 							Byte type=typeBroadcast.getValue().get(itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataValue.type);
 							String valueNameArr="";
