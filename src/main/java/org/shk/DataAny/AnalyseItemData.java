@@ -594,6 +594,12 @@ public class AnalyseItemData implements Serializable{
 								valueArr=itemMainSnak.getValue().propertyInfos.get(j).mainSnak.dataValue.value;
 								valueNameArr="value";
 							}
+							if(valueNameArr.contains(",")){
+								valueNameArr.replace(",", "!!!!!!");
+							}
+							if(valueArr.contains(",")){
+								valueArr.replace(",", "!!!!!!");
+							}
 							mainSnakList.add(RowFactory.create(ID,PID,snakType,dataType,type,valueNameArr,valueArr));
 						}
 					}

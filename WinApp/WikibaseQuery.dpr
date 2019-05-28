@@ -2,7 +2,8 @@ program WikibaseQuery;
 
 uses
   Vcl.Forms,
-  MainWin in 'MainWin.pas' {WikibaseApp};
+  MainWin in 'MainWin.pas' {WikibaseApp},
+  DataBaseUtil in 'publicUnit\DataBaseUtil.pas';
 
 {$R *.res}
 

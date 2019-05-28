@@ -1,0 +1,28 @@
+unit MainWin;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DB, Datasnap.DBClient, SimpleDS,
+  Data.SqlExpr, Data.DBXMySQL, Data.DBXOracle, Data.Win.ADODB, Vcl.StdCtrls,
+  Vcl.ExtCtrls, Vcl.Imaging.pngimage, RdImageButton;
+
+type
+  TWikibaseApp = class(TForm)
+    ImageBtn_close: TRdImageButton;
+    img_bg: TImage;
+  private
+
+  public
+
+  end;
+
+var
+  WikibaseApp: TWikibaseApp;
+
+implementation
+
+{$R *.dfm}
+
+end.

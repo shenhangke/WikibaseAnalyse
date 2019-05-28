@@ -1,0 +1,20 @@
+try
+    self.con1.ConnectionString:='Driver={MySQL ODBC 8.0 Unicode Driver};Server=127.0.0.1;Database=wikibase;User=root; Password=5166266skf;Option=3;';
+    self.con1.LoginPrompt:=false;
+    self.con1.Connected:=True;
+    self.qry1.Connection:=self.con1;
+    self.qry1.SQL.Add('select * from ItemInfo where ID=1');
+    self.qry1.Open;
+    while not self.qry1.Eof do
+    begin
+      ShowMessage(self.qry1.FieldByName('QIndex').AsString+' '+
+      self.qry1.FieldByName('ID').AsString+' '+
+      self.qry1.FieldByName('Name').AsString+' '+
+      self.qry1.FieldByName('Description').AsString);
+      self.qry1.Next;
+    end;
+  except on e:Exception do
+    begin
+      ShowMessage('connection failed');
+    end;
+  end;

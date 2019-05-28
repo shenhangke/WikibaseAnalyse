@@ -1,0 +1,13 @@
+stages:
+  - zipContainerInfo
+
+zipContainerInfo:
+  stage: zipContainerInfo
+  tags:
+    - S4-D
+  script: 
+    - name="shenhangke"
+    - cd ${SHARED_DIR}/Builds/${name}/DataReposity
+    - tar -zcvf mainSnak.tar.gz mainSnak
+    #- split -b 400m -d ItemContainerInfo.tar.gz ItemContainerInfo.tar.gz_
+  when: always

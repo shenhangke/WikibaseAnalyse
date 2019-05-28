@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
@@ -240,6 +241,55 @@ public class ItemDataBaseUtil implements Serializable{
 	}
 	
 	
+	public static void ImportMainSnakToDatabase(String tableName,String filePath){
+		StructField ID=new StructField("QID", DataTypes.IntegerType, false, Metadata.empty());
+		StructField propertyId=new StructField("propertyId", DataTypes.IntegerType, false, Metadata.empty());
+		StructField snakType=new StructField("snakType", DataTypes.ByteType, false, Metadata.empty());
+		StructField dataType=new StructField("dataType", DataTypes.ByteType, false, Metadata.empty());
+		StructField type=new StructField("type", DataTypes.ByteType, false, Metadata.empty());
+		StructField nameArr=new StructField("nameArr", DataTypes.StringType, true, Metadata.empty());
+		StructField valueArr=new StructField("valueArr", DataTypes.StringType, true, Metadata.empty());
+		StructField[] fieldList={ID,propertyId,snakType,dataType,type,nameArr,valueArr};
+		StructType schema=DataTypes.createStructType(fieldList);
+		JavaRDD<Row> originDataRdd = SparkConst.MainSession.read().csv(filePath).filter(new FilterFunction<Row>(){
+
+			@Override
+			public boolean call(Row value) throws Exception {
+				try{
+					Integer ID=new Integer(Integer.parseInt(value.getString(0)));
+				}catch(Exception e){
+					System.out.println("filter the value 0 is: "+value.getString(0));
+					return false;
+				}
+				return true;
+			}
+			
+		}).map(new MapFunction<Row,Row>(){
+
+			@Override
+			public Row call(Row value) throws Exception {
+				Integer ID=0;
+				try{
+					ID=new Integer(Integer.parseInt(value.getString(0)));
+				}catch(Exception e){
+					System.out.println(value.getString(0));
+					return null;
+					//throw new Exception("the ID has illage input,the input is: "+value.getString(0));
+				}
+				Integer propertyID=new Integer(Integer.parseInt(value.getString(1)));
+				Byte snakType=new Byte(Byte.parseByte(value.getString(2)));
+				Byte dataType=new Byte(Byte.parseByte(value.getString(3)));
+				Byte type=new Byte(Byte.parseByte(value.getString(4)));
+				String nameArr=value.getString(5);
+				String valueArr=value.getString(6);
+				return RowFactory.create(ID,propertyID,snakType,dataType,type,nameArr,valueArr);
+			}
+			
+		}, Encoders.bean(Row.class)).javaRDD();
+		SparkConst.MainSession.createDataFrame(originDataRdd, schema).write().mode(SaveMode.Overwrite).jdbc(
+				JDBCUtil.DB_URL, tableName, JDBCUtil.GetWriteProperties(tableName));
+	}
+	
 	
 	public static void main(String[] args) throws SQLException {
 		/**
@@ -254,13 +304,14 @@ public class ItemDataBaseUtil implements Serializable{
 		//ImportInfoDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemInfoFile\\ItemInfoFile",JDBCUtil.ItemInfo);
 		//ImpoertContainerDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemContainerInfo\\ItemContainerInfo",JDBCUtil.ItemContainer);
 		//ImportAliasDataToDatabase("D:\\MyEclpse WorkSpace\\DataProject_Data\\ItemAliasInfo\\ItemAliasInfo",JDBCUtil.ItemAlias);
-		String[] dirList={"D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_minto10000000\\DataTypeNames","D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_maxto10000000"};
-		ImportDataTypeInfoToDatabase(dirList,JDBCUtil.DataTypeNameTable);
+		/*String[] dirList={"D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_minto10000000\\DataTypeNames","D:\\MyEclpse WorkSpace\\DataProject_Data\\DataTypeNames_maxto10000000"};
+		ImportDataTypeInfoToDatabase(dirList,JDBCUtil.DataTypeNameTable);*/
 		//CreateMainSnakTables(WikibaseInfoConst.tableCount);
 		/*String[] dirList={"D:\\MyEclpse WorkSpace\\DataProject_Data\\TypeNames_minto10000000",
 				"D:\\MyEclpse WorkSpace\\DataProject_Data\\TypeNames_maxto10000000"};
 		ImportTypeInfoToDatabase(dirList,JDBCUtil.TypeInfo);*/
-		storeDataToFile(JDBCUtil.DataTypeNameTable,"D:\\MyEclpse WorkSpace\\DataAny\\Data\\DataType");
+		//storeDataToFile(JDBCUtil.DataTypeNameTable,"D:\\MyEclpse WorkSpace\\DataAny\\Data\\DataType");
+		ImportMainSnakToDatabase(JDBCUtil.PrefixMainSnak+"0","D:\\MyEclpse WorkSpace\\DataProject_Data\\mainSnak\\mainSnak_1");
 		System.out.println("import finish");
 	}
 	
