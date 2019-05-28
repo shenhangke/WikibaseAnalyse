@@ -1,6 +1,6 @@
 object WikibaseApp: TWikibaseApp
-  Left = 0
-  Top = 0
+  Left = 480
+  Top = 231
   BorderStyle = bsNone
   Caption = 'WikibaseApp'
   ClientHeight = 666
@@ -12,6 +12,7 @@ object WikibaseApp: TWikibaseApp
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDesigned
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
@@ -577,6 +578,7 @@ object WikibaseApp: TWikibaseApp
           2A5395A9CA5465AA325599AA4C55A62A5395A9EA03D40337A651E26269000000
           0049454E44AE426082}
         ParentFont = False
+        OnClick = ImageBtn_searchClick
         SubCaptionFont.Charset = DEFAULT_CHARSET
         SubCaptionFont.Color = clWindowText
         SubCaptionFont.Height = -11
@@ -634,45 +636,26 @@ object WikibaseApp: TWikibaseApp
         Height = 21
         TabOrder = 0
       end
-      object rdlv_Q1_result: TRdListView
-        Left = 146
-        Top = 142
-        Width = 551
-        Height = 219
-        Columns = <>
-        DoubleBuffered = True
-        ParentDoubleBuffered = False
+      object lv_Q1: TListView
+        Left = 161
+        Top = 136
+        Width = 680
+        Height = 233
+        Columns = <
+          item
+            Caption = 'EntityID'
+            Width = 80
+          end
+          item
+            Caption = 'Name'
+            Width = 300
+          end
+          item
+            Caption = 'Description'
+            Width = 290
+          end>
         TabOrder = 1
-        GroupFont.Charset = DEFAULT_CHARSET
-        GroupFont.Color = clWindowText
-        GroupFont.Height = -11
-        GroupFont.Name = 'Tahoma'
-        GroupFont.Style = []
-        HeaderFont.Charset = DEFAULT_CHARSET
-        HeaderFont.Color = clWindowText
-        HeaderFont.Height = -11
-        HeaderFont.Name = 'Tahoma'
-        HeaderFont.Style = []
-        ShowHorzScroll = True
-        ShowVertScroll = True
-        ShowCustomVertScroll = False
-        ShowCustomHorzScroll = False
-        AllSkinVertScroll.AutoArrow = False
-        AllSkinVertScroll.AutoHide = True
-        AllSkinHorzScroll.AutoArrow = False
-        AllSkinHorzScroll.AutoHide = True
-        AllSkinGroup.GroupLineStartColor = 1579032
-        AllSkinGroup.GroupLineEndColor = 10526880
-        AllSkinGroup.GroupFont.Charset = DEFAULT_CHARSET
-        AllSkinGroup.GroupFont.Color = clWindowText
-        AllSkinGroup.GroupFont.Height = -11
-        AllSkinGroup.GroupFont.Name = 'Tahoma'
-        AllSkinGroup.GroupFont.Style = []
-        AllSkinHeader.HeaderFont.Charset = DEFAULT_CHARSET
-        AllSkinHeader.HeaderFont.Color = clWindowText
-        AllSkinHeader.HeaderFont.Height = -11
-        AllSkinHeader.HeaderFont.Name = 'Tahoma'
-        AllSkinHeader.HeaderFont.Style = []
+        ViewStyle = vsReport
       end
     end
   end

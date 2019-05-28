@@ -1,0 +1,46 @@
+stages:
+  - build-maven
+  - run
+  - clean
+
+
+build-maven:
+  stage: build-maven
+  tags:
+    - S4-D
+  before_script:
+    - yum -y install docker   
+    - systemctl enable docker  
+    - systemctl start docker
+  script:
+    - name="shenhangke"
+    - rm -rf ${SHARED_DIR}/Builds/${name}
+    - mkdir -p ${SHARED_DIR}/Builds/${name}
+    - mkdir -p ${SHARED_DIR}/Builds/${name}/DataReposity
+    - cp -r ./target/* ${SHARED_DIR}/Builds/${name}
+    - cp -r ./Data/DataType ${SHARED_DIR}/Builds/${name}/DataReposity/DataType
+    - cp -r ./Data/Type ${SHARED_DIR}/Builds/${name}/DataReposity/Type   
+  when: always
+
+run_project:
+  stage: run
+  tags: 
+    - S4-D
+  script:
+    - name="shenhangke"
+    - echo ${SHARED_DIR}
+    - ls ${SHARED_DIR}/Datasets/wikidata/wikidata-20150921-all
+    - "${SPARK_DIR}/bin/spark-submit --class org.shk.DataAny.App --packages com.alibaba:fastjson:1.2.57,mysql:mysql-connector-java:8.0.15 ${SHARED_DIR}/Builds/${name}/DataAny-0.0.1-SNAPSHOT.jar"
+  when: always
+
+clean_project:
+  stage: clean
+  tags:
+    - S4-D
+  script: 
+    - name="shenhangke"
+    - ls ${SHARED_DIR}/Builds/${name}/DataReposity
+    - echo "Builds cleaned!"
+  when: always
+
+

@@ -1,0 +1,69 @@
+unit DataBaseUtil;
+
+interface
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,Data.DB, Datasnap.DBClient, SimpleDS,
+  Data.SqlExpr, Data.DBXMySQL, Data.DBXOracle, Data.Win.ADODB, Vcl.StdCtrls;
+
+  const DBConnectionStr='Driver={MySQL ODBC 8.0 Unicode Driver};Server=127.0.0.1;Database=wikibase;User=root; Password=5166266skf;Option=3;';
+
+type
+  TDataBaseUtil=class
+  public
+    constructor Create(); overload;
+    //constructor Create(Connection:TADOConnection); overload;
+    destructor Destroy();override;
+    function QueryEntityInfoByName(EntityName:String):TStringList;
+  private
+    Connection:TADOConnection;
+    function QueryEntityInfo(sql:string):TStringList;
+  end;
+
+implementation
+uses
+  MainWin;
+{ TDataBaseUtil }
+
+constructor TDataBaseUtil.Create;
+begin
+  self.Connection:=TADOConnection.Create(nil);
+  self.Connection.ConnectionString:=DBConnectionStr;
+  self.Connection.LoginPrompt:=false;
+  self.Connection.Connected:=True;
+  //self.Connection.Provider:='MSDASQL';
+end;
+
+destructor TDataBaseUtil.Destroy;
+begin
+  inherited;
+  self.Connection.Close;
+end;
+
+function TDataBaseUtil.QueryEntityInfo(sql: string): TStringList;
+var
+  AdoQuery : TADOQuery;
+  StringList:TStringList;
+begin
+  AdoQuery:=TADOQuery.Create(nil);
+  try
+    AdoQuery.Connection:=self.Connection;
+    AdoQuery.SQL.Add(sql);
+    AdoQuery.Open;
+    StringList:=TStringList.Create;
+    while not  AdoQuery.eof do
+    begin
+      StringList.Add(AdoQuery.FieldByName('ID').AsString);
+      AdoQuery.Next;
+    end;
+    result:=StringList;
+  finally
+    AdoQuery.Free;
+  end;
+end;
+
+function TDataBaseUtil.QueryEntityInfoByName(EntityName:String): TStringList;
+begin
+  result:=self.QueryEntityInfo('select ID from itemInfo where Name="'+EntityName+'"');
+end;
+
+end.
