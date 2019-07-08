@@ -1,0 +1,11 @@
+unit ErrorCode;
+
+interface
+uses
+ System.SysUtils,System.Classes;
+
+
+
+implementation
+
+end.

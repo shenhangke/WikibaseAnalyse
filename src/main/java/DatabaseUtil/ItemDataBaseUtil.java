@@ -311,7 +311,10 @@ public class ItemDataBaseUtil implements Serializable{
 				"D:\\MyEclpse WorkSpace\\DataProject_Data\\TypeNames_maxto10000000"};
 		ImportTypeInfoToDatabase(dirList,JDBCUtil.TypeInfo);*/
 		//storeDataToFile(JDBCUtil.DataTypeNameTable,"D:\\MyEclpse WorkSpace\\DataAny\\Data\\DataType");
-		ImportMainSnakToDatabase(JDBCUtil.PrefixMainSnak+"0","D:\\MyEclpse WorkSpace\\DataProject_Data\\mainSnak\\mainSnak_1");
+		for(int i=1;i<WikibaseInfoConst.tableCount;i++){
+			ImportMainSnakToDatabase(JDBCUtil.PrefixMainSnak+i,"D:\\MyEclpse WorkSpace\\DataProject_Data\\mainSnak\\mainSnak_"+(i+1));
+		}
+		//ImportMainSnakToDatabase(JDBCUtil.PrefixMainSnak+"0","D:\\MyEclpse WorkSpace\\DataProject_Data\\mainSnak\\mainSnak_1");
 		System.out.println("import finish");
 	}
 	

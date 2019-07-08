@@ -1,0 +1,12 @@
+unit ErrorCode;
+
+interface
+uses
+ System.SysUtils,System.Classes;
+
+ var
+  errorCodeIndex:Integer;
+
+implementation
+
+end.

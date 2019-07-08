@@ -10,7 +10,7 @@ public class SparkConst {
 	
 	public static final boolean RunOnLocal=false;
 	
-	public static final SparkSession MainSession=SparkSession.builder().appName("shk_WikiAnalyse").getOrCreate();
+	public static final SparkSession MainSession=SparkSession.builder().master("local[2]").appName("shk_WikiAnalyse").getOrCreate();
 	
 	/*public static final SparkSession LocalSession=SparkSession.builder().appName("shk_WikiAnalyse").master("local[3]").config("spark.executor.memory","3g").
 			config("spark.driver.memory","4g").getOrCreate();*/

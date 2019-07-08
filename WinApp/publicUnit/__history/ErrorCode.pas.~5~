@@ -1,0 +1,14 @@
+unit ErrorCode;
+
+interface
+uses
+ System.SysUtils,System.Classes;
+
+ var
+  errorCodeIndex:Integer;
+
+  function getLastError():Integer;
+
+implementation
+
+end.
